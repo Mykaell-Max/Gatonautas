@@ -1,5 +1,6 @@
 import "../Home.css";
-import AuthCard from "../../../components/AuthCard";
+import Learn from "../Learn.jsx";
+import { Link } from "react-router-dom";
 
 const HomeView = () => {
 
@@ -18,7 +19,9 @@ const HomeView = () => {
             </p>
             <div className="hero-buttons">
               <button className="explore">Explore</button>
-              <button className="learn">Learn</button>
+              <button className="learn" onClick={() => navigate("/learn")}>
+                Learn
+              </button>
             </div>
           </div>
 
