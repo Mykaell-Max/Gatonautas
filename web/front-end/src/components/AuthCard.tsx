@@ -9,9 +9,12 @@ export default function AuthCard() {
       {!flipped && (
         <div 
           className="absolute w-full h-full rounded-3xl shadow-2xl p-10 flex flex-col" 
-          style={{ backgroundColor: '#ffffff' }}
+          style={{ 
+            background: 'radial-gradient(circle at center, #3a0073, #000000 70%)',
+            color: 'white'
+          }}
         >
-          <h2 className="text-4xl font-bold text-center mb-8 text-gray-900">Log In</h2>
+          <h2 className="text-4xl font-bold text-center mb-8 text-white">Log In</h2>
           
           <div className="flex flex-col gap-5 flex-1">
             <div>
@@ -45,7 +48,7 @@ export default function AuthCard() {
             {/* Social Login Buttons */}
             <div className="flex gap-4 justify-center">
               <button 
-                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                className="w-14 h-14 border-2 border-purple-400 rounded-xl flex items-center justify-center hover:bg-purple-900 hover:border-white transition bg-transparent"
                 title="Login with Facebook"
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -54,7 +57,7 @@ export default function AuthCard() {
               </button>
               
               <button 
-                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                className="w-14 h-14 border-2 border-purple-400 rounded-xl flex items-center justify-center hover:bg-purple-900 hover:border-white transition bg-transparent"
                 title="Login with Google"
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -66,21 +69,21 @@ export default function AuthCard() {
               </button>
               
               <button 
-                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                className="w-14 h-14 border-2 border-purple-400 rounded-xl flex items-center justify-center hover:bg-purple-900 hover:border-white transition bg-transparent"
                 title="Login with Apple"
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
-                  <path fill="#000" d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                  <path fill="#FFF" d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                 </svg>
               </button>
             </div>
           </div>
 
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p className="text-center text-sm text-gray-300 mt-6">
             Don't have an account?{" "}
             <button
               onClick={() => setFlipped(true)}
-              className="text-purple-600 font-bold hover:underline"
+              className="text-purple-300 font-bold hover:underline hover:text-white"
             >
               Sign Up
             </button>
@@ -92,9 +95,12 @@ export default function AuthCard() {
       {flipped && (
         <div 
           className="absolute w-full h-full rounded-3xl shadow-2xl p-10 flex flex-col" 
-          style={{ backgroundColor: '#ffffff' }}
+          style={{ 
+            background: 'radial-gradient(circle at center, #3a0073, #000000 70%)',
+            color: 'white'
+          }}
         >
-          <h2 className="text-4xl font-bold text-center mb-8 text-gray-900">Sign Up</h2>
+          <h2 className="text-4xl font-bold text-center mb-8 text-white">Sign Up</h2>
           
           <div className="flex flex-col gap-5 flex-1">
             <div>
@@ -133,7 +139,7 @@ export default function AuthCard() {
             {/* Social Signup Buttons */}
             <div className="flex gap-4 justify-center">
               <button 
-                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                className="w-14 h-14 border-2 border-purple-400 rounded-xl flex items-center justify-center hover:bg-purple-900 hover:border-white transition bg-transparent"
                 title="Sign up with Facebook"
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -142,7 +148,7 @@ export default function AuthCard() {
               </button>
               
               <button 
-                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                className="w-14 h-14 border-2 border-purple-400 rounded-xl flex items-center justify-center hover:bg-purple-900 hover:border-white transition bg-transparent"
                 title="Sign up with Google"
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -154,21 +160,21 @@ export default function AuthCard() {
               </button>
               
               <button 
-                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                className="w-14 h-14 border-2 border-purple-400 rounded-xl flex items-center justify-center hover:bg-purple-900 hover:border-white transition bg-transparent"
                 title="Sign up with Apple"
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
-                  <path fill="#000" d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                  <path fill="#FFF" d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                 </svg>
               </button>
             </div>
           </div>
 
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p className="text-center text-sm text-gray-300 mt-6">
             Already have an account?{" "}
             <button
               onClick={() => setFlipped(false)}
-              className="text-purple-600 font-bold hover:underline"
+              className="text-purple-300 font-bold hover:underline hover:text-white"
             >
               Log In
             </button>
