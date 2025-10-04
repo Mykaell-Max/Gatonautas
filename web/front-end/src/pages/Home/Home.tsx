@@ -1,7 +1,12 @@
 import React from "react";
 import "./Home.css";
+import AuthCard from "./components/AuthCard";
 
-const Home: React.FC = () => {
+interface HomeProps {
+  onLoginClick: () => void;
+}
+
+const Home: React.FC<HomeProps> = ({ onLoginClick }) => {
   return (
     <div className="home-container">
       {/* Navbar */}
@@ -12,7 +17,14 @@ const Home: React.FC = () => {
           <li><a href="#">Learn</a></li>
           <li><a href="#">About</a></li>
           <li><a href="#">Contact</a></li>
-          <li><a href="#" className="login">Log In</a></li>
+          <li>
+            <button 
+              onClick={onLoginClick} 
+              className="hover:text-purple-400 font-bold"
+            >
+              Log In
+            </button>
+          </li>
         </ul>
       </nav>
 
@@ -34,11 +46,12 @@ const Home: React.FC = () => {
 
         <div className="hero-description">
           <p>
-            Founded by a group of dedicated students, the Data Science Club brings together individuals from diverse academic backgrounds who share a common interest in data science, machine learning, artificial intelligence, and related technologies.
+            Explore new worlds. Harness the power of AI to uncover hidden planets outside the Solar System.
           </p>
           <p>
-            Our members range from beginners to advanced practitioners, all united by a desire to explore the fascinating world of data.
+            Our project combines machine learning, education, and citizen science to make exoplanet discovery accessible to everyone from researchers analyzing their own data to students taking their first steps in astronomy.
           </p>
+          <p>Upload real light-curve data, experiment with AI models, and help identify planetary transits in telescope images. Together, we’re building a bridge between curiosity and discovery, turning data into the stories of distant worlds.</p>
         </div>
       </section>
     </div>
