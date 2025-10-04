@@ -1,19 +1,6 @@
-import { useState } from "react";
-import Home from "./pages/Home/Home.tsx";
-import AuthCard from "./components/AuthCard.tsx";
-
+import { AppRoutes } from "./routes";
 function App() {
-  const [showAuth, setShowAuth] = useState(false);
-
-  return (
-    <div>
-      {showAuth ? (
-        <AuthCard />
-      ) : (
-        <Home onLoginClick={() => setShowAuth(true)} />
-      )}
-    </div>
-  );
+return <AppRoutes />;
 }
 
 export default App;
