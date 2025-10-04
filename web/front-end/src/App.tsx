@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Home from "./Home";
-import AuthCard from "./components/AuthCard";
+import Home from "./pages/Home/Home.tsx";
+import AuthCard from "./components/AuthCard.tsx";
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
