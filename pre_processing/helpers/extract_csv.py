@@ -24,6 +24,11 @@ SRC_DIR = os.path.join(THIS_DIR, "src")
 if SRC_DIR not in sys.path:
     sys.path.append(SRC_DIR)
 
+# Add the parent directory to sys.path to import pipeline
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
 from pipeline import (
     detrend_with_bls_mask,
     folded_binned_metrics,
