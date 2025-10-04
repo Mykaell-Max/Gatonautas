@@ -4,48 +4,60 @@ export default function AuthCard() {
   const [flipped, setFlipped] = useState(false);
 
   return (
-    <div className="w-[400px] h-[520px] [perspective:1000px]">
-      <div
-        className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] ${
-          flipped ? "[transform:rotateY(180deg)]" : ""
-        }`}
-      >
-        {/* LOGIN CARD */}
-        <div className="absolute w-full h-full bg-white rounded-3xl shadow-2xl p-8 [backface-visibility:hidden] flex flex-col">
-          <h2 className="text-3xl font-bold text-center mb-8">Log In</h2>
+    <div className="w-[420px] h-[580px] relative">
+      {/* LOGIN CARD */}
+      {!flipped && (
+        <div 
+          className="absolute w-full h-full rounded-3xl shadow-2xl p-10 flex flex-col" 
+          style={{ backgroundColor: '#ffffff' }}
+        >
+          <h2 className="text-4xl font-bold text-center mb-8 text-gray-900">Log In</h2>
           
-          <div className="flex flex-col gap-4 flex-1">
-            <input
-              type="email"
-              placeholder="Email"
-              className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:border-purple-500 transition"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:border-purple-500 transition"
-            />
+          <div className="flex flex-col gap-5 flex-1">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="p-3 border-2 border-gray-300 rounded-xl w-full focus:outline-none focus:border-purple-500 transition text-gray-900"
+              />
+            </div>
             
-            <button className="bg-black text-white w-full py-3 rounded-lg hover:bg-gray-800 transition font-semibold mt-2">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+              <input
+                type="password"
+                placeholder="Enter your password"
+                className="p-3 border-2 border-gray-300 rounded-xl w-full focus:outline-none focus:border-purple-500 transition text-gray-900"
+              />
+            </div>
+            
+            <button className="bg-black text-white w-full py-3 rounded-xl hover:bg-gray-800 transition font-semibold text-lg mt-2">
               Log In
             </button>
 
-            <p className="text-center text-sm text-gray-600 mt-2">
+            <p className="text-center text-sm text-gray-600 mt-1">
               Already have an account?
             </p>
 
-            <div className="text-center text-sm text-gray-500 my-2">Or</div>
+            <div className="text-center text-sm text-gray-400 my-1">— Or —</div>
 
             {/* Social Login Buttons */}
-            <div className="flex gap-3 justify-center">
-              <button className="w-12 h-12 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition">
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <div className="flex gap-4 justify-center">
+              <button 
+                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                title="Login with Facebook"
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
                   <path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
               </button>
               
-              <button className="w-12 h-12 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition">
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <button 
+                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                title="Login with Google"
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
                   <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#4285F4" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -53,9 +65,12 @@ export default function AuthCard() {
                 </svg>
               </button>
               
-              <button className="w-12 h-12 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition">
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#000" d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/>
+              <button 
+                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                title="Login with Apple"
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
+                  <path fill="#000" d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                 </svg>
               </button>
             </div>
@@ -65,50 +80,72 @@ export default function AuthCard() {
             Don't have an account?{" "}
             <button
               onClick={() => setFlipped(true)}
-              className="text-purple-600 font-semibold hover:underline"
+              className="text-purple-600 font-bold hover:underline"
             >
               Sign Up
             </button>
           </p>
         </div>
+      )}
 
-        {/* SIGN UP CARD */}
-        <div className="absolute w-full h-full bg-white rounded-3xl shadow-2xl p-8 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col">
-          <h2 className="text-3xl font-bold text-center mb-8">Sign Up</h2>
+      {/* SIGN UP CARD */}
+      {flipped && (
+        <div 
+          className="absolute w-full h-full rounded-3xl shadow-2xl p-10 flex flex-col" 
+          style={{ backgroundColor: '#ffffff' }}
+        >
+          <h2 className="text-4xl font-bold text-center mb-8 text-gray-900">Sign Up</h2>
           
-          <div className="flex flex-col gap-4 flex-1">
-            <input
-              type="text"
-              placeholder="Name"
-              className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:border-purple-500 transition"
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:border-purple-500 transition"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:border-purple-500 transition"
-            />
+          <div className="flex flex-col gap-5 flex-1">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Name</label>
+              <input
+                type="text"
+                placeholder="Enter your name"
+                className="p-3 border-2 border-gray-300 rounded-xl w-full focus:outline-none focus:border-purple-500 transition text-gray-900"
+              />
+            </div>
             
-            <button className="bg-black text-white w-full py-3 rounded-lg hover:bg-gray-800 transition font-semibold mt-2">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="p-3 border-2 border-gray-300 rounded-xl w-full focus:outline-none focus:border-purple-500 transition text-gray-900"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+              <input
+                type="password"
+                placeholder="Create a password"
+                className="p-3 border-2 border-gray-300 rounded-xl w-full focus:outline-none focus:border-purple-500 transition text-gray-900"
+              />
+            </div>
+            
+            <button className="bg-black text-white w-full py-3 rounded-xl hover:bg-gray-800 transition font-semibold text-lg mt-2">
               Sign Up
             </button>
 
-            <div className="text-center text-sm text-gray-500 my-2">Or</div>
+            <div className="text-center text-sm text-gray-400 my-1">— Or —</div>
 
             {/* Social Signup Buttons */}
-            <div className="flex gap-3 justify-center">
-              <button className="w-12 h-12 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition">
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <div className="flex gap-4 justify-center">
+              <button 
+                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                title="Sign up with Facebook"
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
                   <path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
               </button>
               
-              <button className="w-12 h-12 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition">
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <button 
+                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                title="Sign up with Google"
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
                   <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#4285F4" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -116,9 +153,12 @@ export default function AuthCard() {
                 </svg>
               </button>
               
-              <button className="w-12 h-12 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition">
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#000" d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/>
+              <button 
+                className="w-14 h-14 border-2 border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-purple-400 transition"
+                title="Sign up with Apple"
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
+                  <path fill="#000" d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                 </svg>
               </button>
             </div>
@@ -128,13 +168,13 @@ export default function AuthCard() {
             Already have an account?{" "}
             <button
               onClick={() => setFlipped(false)}
-              className="text-purple-600 font-semibold hover:underline"
+              className="text-purple-600 font-bold hover:underline"
             >
               Log In
             </button>
           </p>
         </div>
-      </div>
+      )}
     </div>
   );
 }
