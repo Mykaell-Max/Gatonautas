@@ -3,12 +3,21 @@ import "./AuthCard.css";
 
 export default function AuthCard() {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); // controle de exibição do modal
 
   const toggleAuth = () => setIsSignUp(!isSignUp);
+  const closeModal = () => setIsOpen(false);
+
+  if (!isOpen) return null; // não renderiza nada se modal fechado
 
   return (
     <div className="auth-overlay">
       <div className={`auth-modal ${isSignUp ? "flip" : ""}`}>
+        {/* Botão de fechar */}
+        <span className="auth-close-btn" onClick={closeModal}>
+          ×
+        </span>
+
         {/* Front: Login */}
         <div className="auth-front">
           <h2>Log In</h2>
