@@ -1,5 +1,4 @@
 import "../Home.css";
-import Learn from "../Learn.jsx";
 import { Link } from "react-router-dom";
 
 const HomeView = () => {
@@ -19,9 +18,9 @@ const HomeView = () => {
             </p>
             <div className="hero-buttons">
               <button className="explore">Explore</button>
-              <button className="learn" onClick={() => navigate("/learn")}>
-                Learn
-              </button>
+            <Link to="/Learn">
+            <button className="learn">Learn</button>
+          </Link>
             </div>
           </div>
 
