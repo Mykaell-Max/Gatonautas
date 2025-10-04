@@ -31,7 +31,8 @@ def detrend_with_bls_mask(time, flux,
                           n_periods=2000, n_durations=50,
                           oversample=10,
                           bin_width=0.5, spline_s=0.001,
-                          max_iter=5, sigma=3.0):
+                          max_iter=5, sigma=3.0,
+                          refine_duration=True):
     mask_valid = np.isfinite(time) & np.isfinite(flux)
     time = np.asarray(time)[mask_valid]
     flux = np.asarray(flux)[mask_valid]
@@ -76,12 +77,132 @@ def detrend_with_bls_mask(time, flux,
     if diffs.size:
         dt_days_best = np.median(diffs)
         best_floor = max(0.01, 3.0 * dt_days_best)
-        best_cap = 0.2 * min_period
+        best_cap = 0.2 * best_period
         if np.isfinite(best_duration):
             if best_duration < best_floor:
                 best_duration = best_floor
             if np.isfinite(best_cap) and best_duration >= best_cap:
                 best_duration = max(best_floor, 0.9 * best_cap)
+    
+    # Optional two-pass refinement for more accurate duration
+    if refine_duration and np.isfinite(best_period) and np.isfinite(best_duration):
+        # Second pass: focused search around detected period with proper duration range
+        per_lo = best_period * 0.98
+        per_hi = best_period * 1.02
+        dur_lo = best_floor
+        dur_hi = min(0.5, 0.2 * best_period)  # Allow up to 0.5 days or 20% of period
+        
+        if dur_hi > dur_lo:
+            durations_refined = np.linspace(dur_lo, dur_hi, n_durations)
+            periods_refined = np.logspace(np.log10(per_lo), np.log10(per_hi), max(256, n_periods//4))
+            
+            periodogram_refined = bls.power(periods_refined, durations_refined, oversample=oversample)
+            
+            if np.ndim(periodogram_refined.power) == 1:
+                idx_best_refined = np.nanargmax(periodogram_refined.power)
+                best_period_refined = periodogram_refined.period[idx_best_refined]
+                best_duration_refined = periodogram_refined.duration[idx_best_refined] if hasattr(periodogram_refined, "duration") else durations_refined[0]
+                t0_refined = periodogram_refined.transit_time[idx_best_refined] if hasattr(periodogram_refined, "transit_time") else t0
+            else:
+                power_per_period_refined = np.nanmax(periodogram_refined.power, axis=1)
+                idx_best_refined = int(np.nanargmax(power_per_period_refined))
+                best_period_refined = periodogram_refined.period[idx_best_refined]
+                dur_idx_refined = int(np.nanargmax(periodogram_refined.power[idx_best_refined, :]))
+                best_duration_refined = periodogram_refined.duration[dur_idx_refined] if hasattr(periodogram_refined, "duration") else durations_refined[dur_idx_refined]
+                t0_refined = periodogram_refined.transit_time[idx_best_refined] if hasattr(periodogram_refined, "transit_time") else t0
+            
+            # Use refined values if they're reasonable
+            if (np.isfinite(best_period_refined) and np.isfinite(best_duration_refined) and 
+                best_period_refined > 0 and best_duration_refined > 0):
+                best_period = best_period_refined
+                best_duration = best_duration_refined
+                t0 = t0_refined
+                periodogram = periodogram_refined  # Update for consistency
+
+                # Optional micro-zoom on duration at fixed period to reduce grid quantization
+                try:
+                    dur_half_span = max(0.02 * best_duration, best_floor * 0.5)
+                    d_lo = max(best_floor, best_duration - dur_half_span)
+                    d_hi = min(dur_hi, best_duration + dur_half_span)
+                    if np.isfinite(d_lo) and np.isfinite(d_hi) and d_hi > d_lo:
+                        durations_zoom = np.linspace(d_lo, d_hi, max(64, n_durations))
+                        periodogram_zoom = bls.power(np.array([best_period]), durations_zoom, oversample=oversample)
+                        # power has shape (len(durations),) when period array len == 1
+                        idx_zoom = int(np.nanargmax(periodogram_zoom.power))
+                        dur_zoom = periodogram_zoom.duration[idx_zoom] if hasattr(periodogram_zoom, "duration") else durations_zoom[idx_zoom]
+                        if np.isfinite(dur_zoom) and dur_zoom > 0:
+                            best_duration = float(dur_zoom)
+                except Exception:
+                    pass
+
+                # Trapezoid refit at fixed period to refine T14 (duration)
+                try:
+                    t14_lo = max(best_floor, 0.5 * best_duration)
+                    t14_hi = min(0.25 * best_period, 1.8 * best_duration, 0.6)
+                    if np.isfinite(t14_lo) and np.isfinite(t14_hi) and t14_hi > t14_lo:
+                        # Fold to phase time (days) around 0
+                        phase = ((time - t0) / best_period + 0.5) % 1.0 - 0.5
+                        x_days = phase * best_period
+                        # Limit to neighborhood to improve robustness
+                        win = max(2.0 * best_duration, 4.0 * best_floor)
+                        sel = np.isfinite(x_days) & np.isfinite(flux) & (np.abs(x_days) <= win)
+                        if np.sum(sel) >= 50:
+                            xb = x_days[sel]
+                            yb = flux[sel]
+                            # Median bin to reduce noise
+                            nb = min(200, max(60, int(np.sqrt(xb.size))))
+                            bins = np.linspace(-win, win, nb + 1)
+                            ymed, _, _ = binned_statistic(xb, yb, statistic="median", bins=bins)
+                            xc = 0.5 * (bins[:-1] + bins[1:])
+                            mask_med = np.isfinite(ymed) & np.isfinite(xc)
+                            xc = xc[mask_med]
+                            ymed = ymed[mask_med]
+
+                            def _shape_trap(x, T14, T12):
+                                half = 0.5 * T14
+                                T12 = max(1e-6, min(T12, half))
+                                flat_half = max(0.0, half - T12)
+                                s = np.zeros_like(x)
+                                # ingress
+                                m = (x >= -half) & (x < -flat_half)
+                                s[m] = (x[m] + half) / T12
+                                # flat
+                                m = (x >= -flat_half) & (x <= flat_half)
+                                s[m] = 1.0
+                                # egress
+                                m = (x > flat_half) & (x <= half)
+                                s[m] = (half - x[m]) / T12
+                                # Outside remains 0
+                                s = np.clip(s, 0.0, 1.0)
+                                return s
+
+                            best_loss = np.inf
+                            best_t14 = best_duration
+                            # Explore T14 and T12/T14 ratios (grazing→triangular up to 0.5)
+                            t14_grid = np.linspace(t14_lo, t14_hi, 48)
+                            ratio_grid = np.linspace(0.1, 0.45, 8)
+                            one = np.ones_like(ymed)
+                            for T14 in t14_grid:
+                                for r in ratio_grid:
+                                    T12 = r * T14
+                                    s = _shape_trap(xc, T14, T12)
+                                    A = np.column_stack([one, -s])
+                                    try:
+                                        coef, _, _, _ = np.linalg.lstsq(A, ymed, rcond=None)
+                                        b0, d0 = float(coef[0]), float(coef[1])
+                                        yhat = b0 - d0 * s
+                                        resid = ymed - yhat
+                                        loss = float(np.nanmean(resid * resid))
+                                        if np.isfinite(loss) and loss < best_loss and d0 > 0:
+                                            best_loss = loss
+                                            best_t14 = float(T14)
+                                    except Exception:
+                                        continue
+                            if np.isfinite(best_t14) and best_t14 > 0:
+                                best_duration = best_t14
+                except Exception:
+                    pass
+    
     mask_transit = bls.transit_mask(time, best_period, best_duration, t0)
 
     flux_work = flux.copy()
@@ -452,12 +573,25 @@ def _interp_cdpp(cdpp_dict, duration_hours):
 
 # Extract features from light curve
 
-def extract_all_features_v2(target, mission="Kepler", sigma_clip=5.0, verbose=False):
+def extract_all_features_from_csv(csv_path, verbose=False):
+    """Extract features from a CSV file containing light curve data."""
+    import pandas as pd
+    
+    # Read the CSV file
+    df = pd.read_csv(csv_path)
+    time = df['time'].values
+    flux = df['flux'].values
+    
+    if verbose:
+        print(f"Loaded light curve data from: {csv_path}")
+        print(f"Data points: {len(time)}")
+    
+    # Use the same feature extraction logic as extract_all_features_v2
+    return _extract_features_from_arrays(time, flux, verbose=verbose)
 
-    lc = download_and_clean(target=target, mission=mission, sigma_clip=sigma_clip)
-    time = lc.time.value
-    flux = lc.flux.value
 
+def _extract_features_from_arrays(time, flux, verbose=False, refine_duration=True):
+    """Internal function to extract features from time and flux arrays."""
     feats = OrderedDict()
 
     mask0 = np.isfinite(time) & np.isfinite(flux)
@@ -466,7 +600,7 @@ def extract_all_features_v2(target, mission="Kepler", sigma_clip=5.0, verbose=Fa
     time_arr = np.asarray(time)[mask0]
     flux_arr = np.asarray(flux)[mask0]
 
-    flux_detr_full, trend_full, mask_transit, bls_info = detrend_with_bls_mask(time_arr, flux_arr)
+    flux_detr_full, trend_full, mask_transit, bls_info = detrend_with_bls_mask(time_arr, flux_arr, refine_duration=refine_duration)
     period = float(bls_info.get("best_period", np.nan))
     t0 = float(bls_info.get("t0", np.nan))
     duration_days = float(bls_info.get("best_duration", np.nan))
@@ -569,14 +703,9 @@ def extract_all_features_v2(target, mission="Kepler", sigma_clip=5.0, verbose=Fa
         feats["kurtosis_flux"] = np.nan
     feats["outlier_resistance"] = float(np.sum(np.abs(flux_scaled[finite_scaled]) > 5) / np.sum(finite_scaled) * 100) if np.sum(finite_scaled)>0 else np.nan
 
-    if "RADIUS" in lc.meta and np.isfinite(lc.meta["RADIUS"]):
-        stellar_radius = lc.meta["RADIUS"]  
-        Rp_over_Rs = np.sqrt(feats["depth_mean_per_transit"])
-        feats["planet_radius_rearth"] = stellar_radius * 109.1 * Rp_over_Rs
-        feats["planet_radius_rjup"]   = stellar_radius * 9.95 * Rp_over_Rs
-    else:
-        feats["planet_radius_rearth"] = np.nan
-        feats["planet_radius_rjup"]   = np.nan
+    # Note: For CSV data, we don't have stellar radius information
+    feats["planet_radius_rearth"] = np.nan
+    feats["planet_radius_rjup"]   = np.nan
 
     if verbose:
         print("\n=== Extracted features (ordered) ===")
@@ -585,9 +714,28 @@ def extract_all_features_v2(target, mission="Kepler", sigma_clip=5.0, verbose=Fa
 
     return feats
 
+
+def extract_all_features_v2(target, mission="Kepler", sigma_clip=5.0, verbose=False, refine_duration=True):
+    """Extract features from a target by downloading and processing light curve data."""
+    lc = download_and_clean(target=target, mission=mission, sigma_clip=sigma_clip)
+    time = lc.time.value
+    flux = lc.flux.value
+    
+    # Use the internal function for feature extraction
+    feats = _extract_features_from_arrays(time, flux, verbose=verbose, refine_duration=refine_duration)
+    
+    # Add stellar radius information if available
+    if "RADIUS" in lc.meta and np.isfinite(lc.meta["RADIUS"]):
+        stellar_radius = lc.meta["RADIUS"]  
+        Rp_over_Rs = np.sqrt(feats["depth_mean_per_transit"])
+        feats["planet_radius_rearth"] = stellar_radius * 109.1 * Rp_over_Rs
+        feats["planet_radius_rjup"]   = stellar_radius * 9.95 * Rp_over_Rs
+    
+    return feats
+
 # For batch processing
 
-def batch_extract_features_from_targets(targets, mission="Kepler", sigma_clip=5.0, n_workers=None, verbose=True):
+def batch_extract_features_from_targets(targets, mission="Kepler", sigma_clip=5.0, n_workers=None, verbose=True, refine_duration=True):
     targets = list(targets or [])
     total = len(targets)
     if n_workers is None:
@@ -597,7 +745,7 @@ def batch_extract_features_from_targets(targets, mission="Kepler", sigma_clip=5.
 
     def _worker(targ):
         try:
-            feats = extract_all_features_v2(targ, mission=mission, sigma_clip=sigma_clip, verbose=False)
+            feats = extract_all_features_v2(targ, mission=mission, sigma_clip=sigma_clip, verbose=False, refine_duration=refine_duration)
             out = OrderedDict(feats)
             out["target"] = targ
             return out

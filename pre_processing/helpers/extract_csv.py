@@ -40,7 +40,73 @@ from pipeline import (
 )
 
 
-def extract_features_from_arrays(time: np.ndarray, flux: np.ndarray, verbose: bool = False) -> OrderedDict:
+def summarize_dataset_health(df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate dataset-level noise/health metrics from per-row feature table.
+
+    Returns a single-row DataFrame with robust statistics and completeness rates.
+    """
+    n_rows = len(df)
+    out: OrderedDict = OrderedDict()
+    out["rows"] = int(n_rows)
+    if "error" in df.columns:
+        err_rows = int(df["error"].notna().sum())
+    else:
+        err_rows = 0
+    out["error_rows"] = err_rows
+    out["error_rate"] = float(err_rows / n_rows) if n_rows > 0 else np.nan
+
+    def add_stats(col: str):
+        if col not in df.columns or n_rows == 0:
+            out[f"{col}_finite_rate"] = np.nan
+            out[f"{col}_median"] = np.nan
+            out[f"{col}_p16"] = np.nan
+            out[f"{col}_p84"] = np.nan
+            out[f"{col}_mean"] = np.nan
+            out[f"{col}_std"] = np.nan
+            return
+        s = pd.to_numeric(df[col], errors="coerce")
+        finite = np.isfinite(s.values)
+        out[f"{col}_finite_rate"] = float(finite.sum() / n_rows) if n_rows > 0 else np.nan
+        if finite.any():
+            v = s.values[finite]
+            out[f"{col}_median"] = float(np.nanmedian(v))
+            out[f"{col}_p16"] = float(np.nanpercentile(v, 16))
+            out[f"{col}_p84"] = float(np.nanpercentile(v, 84))
+            out[f"{col}_mean"] = float(np.nanmean(v))
+            out[f"{col}_std"] = float(np.nanstd(v))
+        else:
+            out[f"{col}_median"] = np.nan
+            out[f"{col}_p16"] = np.nan
+            out[f"{col}_p84"] = np.nan
+            out[f"{col}_mean"] = np.nan
+            out[f"{col}_std"] = np.nan
+
+    key_cols = [
+        "local_noise",
+        "cdpp_3h",
+        "cdpp_6h",
+        "cdpp_12h",
+        "MES",
+        "snr_global",
+        "snr_per_transit_mean",
+        "resid_rms_global",
+        "cadence_hours",
+        "duration_hours",
+        "period_days",
+        "npts_transit_median",
+        "depth_mean_per_transit",
+        "depth_std_per_transit",
+    ]
+    for c in key_cols:
+        add_stats(c)
+
+    # Simple data quality flags
+    out["rows_with_low_points"] = int((df.get("npts_transit_median", np.nan) < 3).sum()) if "npts_transit_median" in df.columns else 0
+    out["rows_with_nan_depth"] = int(pd.to_numeric(df.get("depth_mean_per_transit", np.nan), errors="coerce").isna().sum()) if "depth_mean_per_transit" in df.columns else 0
+
+    return pd.DataFrame([out])
+
+def extract_features_from_arrays(time: np.ndarray, flux: np.ndarray, verbose: bool = False, refine_duration: bool = True) -> OrderedDict:
     """Extract features from uniform time/flux arrays using pipeline primitives."""
     feats: OrderedDict = OrderedDict()
 
@@ -53,7 +119,7 @@ def extract_features_from_arrays(time: np.ndarray, flux: np.ndarray, verbose: bo
     flux_arr = np.asarray(flux)[mask_valid]
 
     # 1) Detrend and rough transit search via BLS
-    flux_detr_full, trend_full, mask_transit, bls_info = detrend_with_bls_mask(time_arr, flux_arr)
+    flux_detr_full, trend_full, mask_transit, bls_info = detrend_with_bls_mask(time_arr, flux_arr, refine_duration=refine_duration)
     period = float(bls_info.get("best_period", np.nan))
     t0 = float(bls_info.get("t0", np.nan))
     duration_days = float(bls_info.get("best_duration", np.nan))
@@ -157,7 +223,7 @@ def find_flux_columns(columns, flux_prefix: str) -> list:
 
 
 def _row_worker(args):
-    i, time, flux_values, label_value, label_col = args
+    i, time, flux_values, label_value, label_col, refine_duration = args
     out = OrderedDict()
     out["row_index"] = int(i)
     if label_col is not None:
@@ -169,7 +235,7 @@ def _row_worker(args):
             med = 1.0
         flux_values = np.where(np.isfinite(flux_values), flux_values, med)
         flux_norm = flux_values / med
-        feats = extract_features_from_arrays(time, flux_norm, verbose=False)
+        feats = extract_features_from_arrays(time, flux_norm, verbose=False, refine_duration=refine_duration)
         out.update(feats)
     except Exception as e:
         out["error"] = str(e)
@@ -183,7 +249,9 @@ def process_exo_csv(csv_path: str,
                     flux_prefix: str = "FLUX",
                     max_rows: int | None = None,
                     verbose: bool = True,
-                    n_workers: int | None = None) -> pd.DataFrame:
+                    n_workers: int | None = None,
+                    health_out: str | None = None,
+                    refine_duration: bool = True) -> pd.DataFrame:
     """Process an exo-style CSV and write per-row features to CSV."""
     df = pd.read_csv(csv_path)
     if max_rows is not None and max_rows > 0:
@@ -216,6 +284,7 @@ def process_exo_csv(csv_path: str,
                 pd.to_numeric(row[flux_cols], errors='coerce').values.astype(float),
                 (int(row[label_col]) if (label_col in df.columns and np.isfinite(row[label_col])) else (row[label_col] if label_col in df.columns else None)),
                 (label_col if label_col in df.columns else None),
+                refine_duration,
             )
             results.append(_row_worker(args))
             if verbose and total >= 10 and (len(results) % max(1, total // 10) == 0):
@@ -234,6 +303,7 @@ def process_exo_csv(csv_path: str,
                     pd.to_numeric(row[flux_cols], errors='coerce').values.astype(float),
                     (int(row[label_col]) if (label_col in df.columns and np.isfinite(row[label_col])) else (row[label_col] if label_col in df.columns else None)),
                     (label_col if label_col in df.columns else None),
+                    refine_duration,
                 )
                 futures.append(ex.submit(_row_worker, args))
                 submitted += 1
@@ -252,6 +322,18 @@ def process_exo_csv(csv_path: str,
     if verbose:
         print(f"Saved results to: {output_path}")
         print(f"Rows: {len(out_df)}  Columns: {len(out_df.columns)}")
+
+    # Optional dataset-level health summary
+    if health_out is not None:
+        health_df = summarize_dataset_health(out_df)
+        os.makedirs(os.path.dirname(health_out) or ".", exist_ok=True)
+        if health_out.lower().endswith(".txt"):
+            with open(health_out, "w") as f:
+                f.write(health_df.to_string(index=False))
+        else:
+            health_df.to_csv(health_out, index=False)
+        if verbose:
+            print(f"Saved health summary to: {health_out}")
     return out_df
 
 
@@ -265,6 +347,8 @@ def parse_args():
     p.add_argument("--max-rows", type=int, default=None, help="Process only first N rows")
     p.add_argument("--quiet", action="store_true", help="Reduce verbosity")
     p.add_argument("--workers", type=int, default=None, help="Number of parallel workers (default: CPU count)")
+    p.add_argument("--health-out", default=None, help="Optional path to dataset health summary (.csv or .txt)")
+    p.add_argument("--no-refine", action="store_true", help="Disable two-pass BLS duration refinement")
     return p.parse_args()
 
 
@@ -279,6 +363,8 @@ def main():
         max_rows=args.max_rows,
         verbose=not args.quiet,
         n_workers=args.workers,
+        health_out=args.health_out,
+        refine_duration=not args.no_refine,
     )
 
 
