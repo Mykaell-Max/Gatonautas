@@ -7,15 +7,17 @@ from scipy.interpolate import UnivariateSpline
 from astropy.timeseries import BoxLeastSquares 
 from scipy import stats
 from scipy.ndimage import uniform_filter1d
+import warnings
 from scipy.stats import binned_statistic
 from statsmodels.tsa.stattools import acf as sm_acf
 from collections import OrderedDict
 from scipy.stats import skew, kurtosis
 from scipy.stats import binned_statistic
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 # 1 - Dowload and clean light curve
 
-def download_and_clean(target, mission, sigma_clip=5.0):
+def download_and_clean(target, mission="Kepler", sigma_clip=5.0):
     lc = lk.search_lightcurve(target, mission=mission).download()
     lc = lc.remove_nans()
     lc = lc.normalize()
@@ -37,7 +39,22 @@ def detrend_with_bls_mask(time, flux,
     if max_period is None:
         max_period = (time.max() - time.min()) / 3.0
 
-    durations = np.linspace(0.01, 0.2, n_durations)
+    # Build a cadence-aware duration grid. Floor the minimum duration to ~3 samples.
+    diffs = np.diff(time)
+    diffs = diffs[np.isfinite(diffs)]
+    if diffs.size:
+        dt_days = np.median(diffs)
+        min_dur_floor = max(0.01, 3.0 * dt_days)
+    else:
+        dt_days = 0.02 
+        min_dur_floor = 0.06
+    # Cap durations to a fraction of the minimum period so BLS constraints are satisfied
+    max_dur_cap = 0.2 * min_period 
+    if not np.isfinite(max_dur_cap) or max_dur_cap <= 0:
+        max_dur_cap = 0.2
+    if min_dur_floor >= max_dur_cap:
+        min_dur_floor = 0.5 * max_dur_cap
+    durations = np.linspace(min_dur_floor, max_dur_cap, n_durations)
     period_grid = np.logspace(np.log10(min_period), np.log10(max_period), n_periods)
 
     bls = BoxLeastSquares(time, flux)
@@ -56,6 +73,15 @@ def detrend_with_bls_mask(time, flux,
         best_duration = periodogram.duration[dur_idx] if hasattr(periodogram, "duration") else durations[dur_idx]
         t0 = periodogram.transit_time[idx_best] if hasattr(periodogram, "transit_time") else time[0]
 
+    if diffs.size:
+        dt_days_best = np.median(diffs)
+        best_floor = max(0.01, 3.0 * dt_days_best)
+        best_cap = 0.2 * min_period
+        if np.isfinite(best_duration):
+            if best_duration < best_floor:
+                best_duration = best_floor
+            if np.isfinite(best_cap) and best_duration >= best_cap:
+                best_duration = max(best_floor, 0.9 * best_cap)
     mask_transit = bls.transit_mask(time, best_period, best_duration, t0)
 
     flux_work = flux.copy()
@@ -284,6 +310,14 @@ def per_transit_stats_simple(time, flux, period, t0, transit_duration_days, wind
     t = time[mask]; f = flux[mask]
     if transit_duration_days is None or transit_duration_days <= 0:
         transit_duration_days = 0.1
+    # Floor duration to ensure at least ~3 cadence samples per transit
+    diffs = np.diff(t)
+    diffs = diffs[np.isfinite(diffs)]
+    if diffs.size:
+        dt_days = np.median(diffs)
+        min_dur = 3.0 * dt_days
+        if np.isfinite(transit_duration_days) and transit_duration_days < min_dur:
+            transit_duration_days = min_dur
     epochs = np.floor((t - t0) / period + 1e-12).astype(int)
     unique_epochs = np.unique(epochs)
     per_transit = []; depths = []; npts_list = []
@@ -418,7 +452,7 @@ def _interp_cdpp(cdpp_dict, duration_hours):
 
 # Extract features from light curve
 
-def extract_all_features(target, mission="Kepler", sigma_clip=5.0, verbose=False):
+def extract_all_features_v2(target, mission="Kepler", sigma_clip=5.0, verbose=False):
 
     lc = download_and_clean(target=target, mission=mission, sigma_clip=sigma_clip)
     time = lc.time.value
@@ -551,3 +585,50 @@ def extract_all_features(target, mission="Kepler", sigma_clip=5.0, verbose=False
 
     return feats
 
+# For batch processing
+
+def batch_extract_features_from_targets(targets, mission="Kepler", sigma_clip=5.0, n_workers=None, verbose=True):
+    targets = list(targets or [])
+    total = len(targets)
+    if n_workers is None:
+        import os as _os
+        n_workers = _os.cpu_count() or 1
+    n_workers = max(1, int(n_workers))
+
+    def _worker(targ):
+        try:
+            feats = extract_all_features_v2(targ, mission=mission, sigma_clip=sigma_clip, verbose=False)
+            out = OrderedDict(feats)
+            out["target"] = targ
+            return out
+        except Exception as e:
+            out = OrderedDict()
+            out["target"] = targ
+            out["error"] = str(e)
+            return out
+
+    if n_workers == 1:
+        results = []
+        for i, targ in enumerate(targets):
+            results.append(_worker(targ))
+            if verbose and total >= 10 and ((i + 1) % max(1, total // 10) == 0 or (i + 1) == total):
+                print(f"Processed {i+1}/{total}")
+        return results
+
+    results_by_index = [None] * total
+    completed = 0
+    with ProcessPoolExecutor(max_workers=n_workers) as ex:
+        futures = {ex.submit(_worker, targ): idx for idx, targ in enumerate(targets)}
+        for fut in as_completed(futures):
+            idx = futures[fut]
+            try:
+                res = fut.result()
+            except Exception as e:
+                res = OrderedDict()
+                res["target"] = targets[idx]
+                res["error"] = str(e)
+            results_by_index[idx] = res
+            completed += 1
+            if verbose and total >= 10 and (completed % max(1, total // 10) == 0 or completed == total):
+                print(f"Completed {completed}/{total}")
+    return [r for r in results_by_index if r is not None]
