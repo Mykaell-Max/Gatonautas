@@ -45,11 +45,7 @@ const LearnView: React.FC = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="learn-footer">
-        <p>© 2025 Gatonautas Org. All rights reserved.</p>
-        <p>Exploring the universe, one pixel at a time.</p>
-      </footer>
+     
     </div>
   );
 };
