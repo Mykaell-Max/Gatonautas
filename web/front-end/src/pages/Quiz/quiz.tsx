@@ -7,7 +7,7 @@ type Question = {
   options: string[];
 };
 
-const QuizView = () => {
+const Quiz= () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -76,5 +76,4 @@ const QuizView = () => {
     </div>
   );
 };
-
-export default QuizView;
+export default Quiz;
