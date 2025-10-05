@@ -7,6 +7,7 @@ import About from "./pages/About/About";
 import UploadData from "./pages/Explore/UploadData/UploadData";
 import Quiz from "./pages/Quiz/quiz";
 import Classify from "./pages/Classify/Classify"
+import Quiz2 from "./pages/Quiz2/Quiz2"
 
 export const AppRoutes = () =>{
     return(
@@ -19,6 +20,7 @@ export const AppRoutes = () =>{
                 <Route path="/UploadData" element={<UploadData/>} />
                 <Route path="/Quiz" element={<Quiz />} />
                 <Route path="/Classify" element={<Classify/>} />
+                <Route path="/Quiz2" element={<Quiz2/>} />
 
             </Routes>
     )
