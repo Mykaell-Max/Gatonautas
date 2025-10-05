@@ -102,22 +102,22 @@
 }
 
 /* Caixa cinza da última seção */
-.quiz-box {
-  background-color: rgba(240, 240, 240, 0.9);
+.Classify-box {
+  background-color: rgb(168 125 12 / 90%);
   padding: 2rem;
   border-radius: 10px;
 }
 
-.quiz-box h2 {
+.Classify-box h2 {
   color: #111;
 }
 
-.quiz-box p {
+.Classify-box p {
   color: #333;
 }
 
 /* Botão do quiz */
-.quiz {
+.Classify {
   padding: 0.8rem 1.5rem;
   font-size: 1rem;
   border-radius: 5px;
@@ -129,7 +129,7 @@
   transition: background 0.3s ease;
 }
 
-.quiz:hover {
+.Classify:hover {
   background: #333;
 }
 
