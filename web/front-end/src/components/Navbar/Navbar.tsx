@@ -7,6 +7,7 @@ const Navbar: React.FC = () => {
   const [showAuthCard, setShowAuthCard] = useState(false);
 
   const handleLoginClick = () => setShowAuthCard(true);
+  const handleClose = () => setShowAuthCard(false);
 
   return (
     <>
@@ -17,12 +18,12 @@ const Navbar: React.FC = () => {
           <li><Link to="/Explore">Explore</Link></li>
           <li><Link to="/contact">About</Link></li>
           <li>
-            <button onClick={handleLoginClick}>Log In</button>
+            <button onClick={handleLoginClick}>Login</button>
           </li>
         </ul>
       </nav>
 
-      {showAuthCard && <AuthCard />}
+      {showAuthCard && <AuthCard onClose={handleClose} />}
     </>
   );
 };

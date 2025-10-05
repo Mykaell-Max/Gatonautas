@@ -15,10 +15,9 @@ const LearnView: React.FC = () => {
             </p>
             <p>Empower your curiosity and become part of the next generation of explorers.</p>
             <div className="learn-buttons">
-            <Link to="/Learn">
+            <Link to="/Training">
                 <button className="training">Training</button>
             </Link>
-              <button className="training">Training</button>
             </div>
             <div className="learn-buttons">
             <p>Ready to go? Classify real data and help new discoveries!</p>  
