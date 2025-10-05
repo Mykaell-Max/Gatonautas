@@ -1,6 +1,6 @@
 * {
   box-sizing: content-box;
-  font-size: clamp(1rem, 1.5vw, 1.5rem); /* cresce junto com a tela */
+  font-size: clamp(1rem, 1.4vw, 1.5rem); /* cresce junto com a tela */
 }
 html, body {
   margin: 0;

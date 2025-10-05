@@ -1,36 +1,56 @@
-// src/pages/Learn/LearnView.tsx
 import React from "react";
-import "./Learn.css"; // seu CSS para a página Learn
+import "./Learn.css";
 import { Link } from "react-router-dom";
+import Foguete from "../../assets/Learn.svg";
 
 const LearnView: React.FC = () => {
   return (
-    <>
-      <div className="learn-container">
-        <div className="learn-hero">
-          <div className="learn-text">
-            <h1>Learn.</h1>
-            <p>
-              From the fundamentals of planetary transits to Machine Learning tools, dive into interactive lessons and challenges.
-            </p>
-            <p>Empower your curiosity and become part of the next generation of explorers.</p>
-            <div className="learn-buttons">
-            <Link to="/Training">
-                <button className="training">Training</button>
-            </Link>
+    <div 
+      className="learn-container"
+      style={{
+        backgroundImage: `url(${Foguete})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'right top',
+        backgroundSize: '35%'
+      }}
+    >
+      <div className="learn-hero">
+        {/* Bloco de texto */}
+        <div className="learn-text">
+          <h1>Learn.</h1>
+          <div className="learn-grid">
+            {/* Coluna da esquerda */}
+            <div className="learn-left">
+              <div className="learn-buttons">
+                <p>
+                  From the fundamentals of planetary transits to Machine Learning tools, dive into interactive lessons and challenges.
+                </p>
+                <p>
+                  Empower your curiosity and become part of the next generation of explorers.
+                </p>
+                <Link to="/Training">
+                  <button className="training">Training</button>
+                </Link>
+              </div>
             </div>
-            <div className="learn-buttons">
-            <p>Ready to go? Classify real data and help new discoveries!</p>  
-              <button className="classify">Classify</button>
-            </div>
-          </div>
 
-          <div className="learn-image">
-            <img src="/images/rocket-launch.jpg" alt="Rocket Launch" />
+            {/* Coluna da direita */}
+            <div className="learn-right">
+              <div className="learn-buttons">
+                <p>Ready to go? Classify real data and help new discoveries!</p>
+                <button className="classify">Classify</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </>
+
+      {/* Footer */}
+      <footer className="learn-footer">
+        <p>© 2025 Gatonautas Org. All rights reserved.</p>
+        <p>Exploring the universe, one pixel at a time.</p>
+      </footer>
+    </div>
   );
 };
 
