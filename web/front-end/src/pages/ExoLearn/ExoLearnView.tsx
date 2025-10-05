@@ -15,9 +15,9 @@ const ExoLearn = () => {
           <p>
             Join a global mission to uncover new worlds—and help bring the wonders of space science into everyday life.
           </p>
-          <div className="hero-buttons">
+          <div  className="hero-buttons" >
             <Link to="/Explore">
-            <button className="explore">Start!!</button>
+            <button className="explore" >Start!!</button>
             </Link>
           </div>
         </div>
