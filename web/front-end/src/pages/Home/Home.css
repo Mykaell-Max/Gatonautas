@@ -1,5 +1,6 @@
 * {
   box-sizing: content-box;
+  font-size: clamp(1rem, 1.5vw, 1.5rem); /* cresce junto com a tela */
 }
 html, body {
   margin: 0;
@@ -35,7 +36,7 @@ html, body {
 }
 
 .hero-text h1 {
-  font-size: 3.5rem;
+  font-size: clamp(2rem, 4.5vw, 6.5rem); 
   font-weight: 700;
   line-height: 1.2;
   z-index: 1;
@@ -43,11 +44,12 @@ html, body {
 
 .hero-text .highlight {
   color: #ffcc00;
+  font-size: clamp(2rem, 3.5vw, 6.5rem); 
 }
 
 .hero-text p {
   margin-top: 1rem;
-  font-size: 1.3rem;
+  font-size: clamp(1rem, 1.5vw, 1.5rem); 
   opacity: 0.9;
 }
 
@@ -99,7 +101,7 @@ html, body {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 100%;
+  width: 900px;
   max-width: 55%;
   opacity: 0.6; /* reduz brilho para não apagar o texto */
   pointer-events: none;

@@ -1,7 +1,9 @@
 .navbar {
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  height: 80px; /* Navbar maior */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -21,16 +23,23 @@
   padding: 0;
 }
 
-.navbar a,
-.navbar button {
-  color: white;
-  padding: 0 15px 0 15px;
-  background-color: #1a1a1a00;
+.navbar a{
+  color: rgba(255, 255, 255, 0.911);
   text-decoration: none;
   font-weight: bold; /* textos mais grossos */
   font-size: 1.1rem;
   cursor: pointer;
 }
+
+.navbar button {
+  background: #000; /* preto sólido */
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+}
+
 
 .navbar a:hover,
 .navbar button:hover {
