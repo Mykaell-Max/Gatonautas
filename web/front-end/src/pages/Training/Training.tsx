@@ -29,6 +29,33 @@ const Training: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Seção 2 – fundo branco com texto explicativo + vídeo */}
+      <section className="section section-side section-light">
+        <div className="section-content">
+          <h2>How are exoplanets discovered?</h2>
+          <p>
+            A planetary transit occurs when a planet passes directly in front of its star, as viewed by an observer. During a transit, the planet blocks a small portion of the star’s light, causing a temporary and periodic dimming.
+          </p>
+          <p>
+            This dimming can be detected by sensitive instruments and used to infer the presence of a planet. The amount of dimming and the duration of the transit can provide information about the planet’s size and orbit.
+          </p>
+          <p>
+            The transit method is one of the most successful techniques for discovering exoplanets and is used by missions such as NASA’s Kepler and TESS.
+          </p>
+        </div>
+
+        <div className="section-video">
+          <iframe
+            src="https://www.youtube.com/embed/xNeRqbw18Jk?autoplay=1&loop=1&playlist=xNeRqbw18Jk"
+            title="Star field with transit"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+      </section>
+
       {/* Seção 3 – fundo branco com imagem lateral */}
       <section className="section section-side section-light">
         <div className="section-content">
@@ -45,67 +72,36 @@ const Training: React.FC = () => {
         </div>
       </section>
 
-      {/* Seção 2 – fundo branco com texto explicativo */}
-      <section className="section section-side section-light">
-        <div className="section-content">
-          <h2>How are exoplanets discovered?</h2>
-          <p>
-            A planetary transit occurs when a planet passes directly in front of its star, as viewed by an observer. During a transit, the planet blocks a small portion of the star’s light, causing a temporary and periodic dimming.
-          </p>
-          <p>
-            This dimming can be detected by sensitive instruments and used to infer the presence of a planet. The amount of dimming and the duration of the transit can provide information about the planet’s size and orbit.
-          </p>
-          <p>
-            The transit method is one of the most successful techniques for discovering exoplanets and is used by missions such as NASA’s Kepler and TESS.
-          </p>
-        </div>
-<div className="section-video">
-<iframe
-  src="https://www.youtube.com/embed/xNeRqbw18Jk?autoplay=1&loop=1&playlist=xNeRqbw18Jk"
-  title="Star field with transit"
-  frameBorder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowFullScreen
-></iframe>
-</div>
-
-      </section>
-
-
-      {/* Seção 2 – fundo branco com texto explicativo */}
+      {/* Seção 4 – Habitable Zone com vídeo */}
       <section className="section section-side section-light">
         <div className="section-content">
           <h2>Habitable Zone</h2>
           <p>
-           One of the main requirements for the existence of life as we know is liquid water. The habitable zone is the range of distances from a star where liquid water could exist on the surface of an exoplanet. The temperature conditions there might be just right: not too hot and not too cold.
+            One of the main requirements for the existence of life as we know is liquid water.
+            The habitable zone is the range of distances from a star where liquid water could exist
+            on the surface of an exoplanet. The temperature conditions there might be just right:
+            not too hot and not too cold.
           </p>
         </div>
-<div className="section-video">
-<iframe
-  src="https://upload.wikimedia.org/wikipedia/commons/transcoded/0/0e/Habitable_Zones_Compared_to_the_Size_of_the_Hosting_Star.webm/Habitable_Zones_Compared_to_the_Size_of_the_Hosting_Star.webm.720p.vp9.webm"
-  title="Habitable Zones Compared to the Size of the Hosting Star"
-  frameBorder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowFullScreen
-></iframe>
-</div>
 
+        <div className="section-video">
+          <iframe
+            src="https://upload.wikimedia.org/wikipedia/commons/transcoded/0/0e/Habitable_Zones_Compared_to_the_Size_of_the_Hosting_Star.webm/Habitable_Zones_Compared_to_the_Size_of_the_Hosting_Star.webm.720p.vp9.webm"
+            title="Habitable Zones Compared to the Size of the Hosting Star"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
       </section>
 
-      {/* Seção 4 – imagem à direita, texto à esquerda em caixa cinza */}
-      <section className="section section-side section-light reverse">
-        <div className="section-content quiz-box">
+      {/* Seção 5 – Centralizada */}
+      <section className="section section-final">
+        <div className="quiz-box">
           <h2>Ready to test your knowledge?</h2>
           <Link to="/quiz">
             <button className="quiz">Start Quiz</button>
           </Link>
-        </div>
-
-        <div className="section-content2">
-          <h2>This is what a Planetary Transit looks like:</h2>
-          <div className="section-image">
-            <img src={Training3} alt="Transit graph" />
-          </div>
         </div>
       </section>
     </div>
