@@ -11,6 +11,11 @@ const Training: React.FC = () => {
         <div className="learn-text">
           <h1>Training</h1>
           <p>
+            <strong>What are Exoplanets?</strong><br /><br />
+            An exoplanet is any planet beyond our solar system. They can orbit other stars, besides the sun, pulsars or even float free (rogue planets) untethered to any star.
+            <br /><br />
+          </p>
+          <p>
             <strong>How do we discover exoplanets?</strong><br /><br />
             A planetary transit happens when a planet passes directly in front of its star, from a point of view, blocking a tiny portion of the star’s light for a short time. Imagine watching a bright light bulb and a small toy moving in front of it for a moment—the bulb looks slightly dimmer. That’s exactly what astronomers detect when an exoplanet transits its star.
             <br /><br />
@@ -18,9 +23,11 @@ const Training: React.FC = () => {
             <br /><br />
             This method is incredibly powerful because it’s sensitive and efficient. Space telescopes like Kepler and TESS monitor thousands of stars at once, looking for these tiny, regular dips in brightness. As a result, most of the exoplanets we know today have been discovered through the transit method.
           </p>
+          <p>
+            <strong>This is what a Planetary Transit looks like:</strong>
+          </p>
           <div className="learn-buttons">
-            <button className="training">Start Training</button>
-            <button className="classify">Classify Planets</button>
+            <button className="quiz">Start Quiz</button>
           </div>
         </div>
         <div className="learn-image">
