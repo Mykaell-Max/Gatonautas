@@ -40,6 +40,24 @@ from pipeline import (
 )
 
 
+# Desired final feature order for CSV outputs
+DESIRED_FEATURE_ORDER = [
+    "period_days","t0","duration_days","duration_hours",
+    "scale_mean","scale_std","scale_skewness","scale_kurtosis","scale_outlier_resistance",
+    "local_noise","depth_stability",
+    "acf_lag_1h","acf_lag_3h","acf_lag_6h","acf_lag_12h","acf_lag_24h",
+    "cadence_hours",
+    "depth_mean_per_transit","depth_std_per_transit","npts_transit_median",
+    "cdpp_3h","cdpp_6h","cdpp_12h",
+    "SES_mean","SES_std","MES","snr_global","snr_per_transit_mean","snr_per_transit_std",
+    "resid_rms_global","vshape_metric",
+    "secondary_depth","secondary_depth_snr","secondary_depth_snr_log10","secondary_depth_snr_capped",
+    "secondary_to_primary_ratio","secondary_is_eb_like","odd_even_depth_ratio","ingress_egress_asymmetry",
+    "skewness_flux","kurtosis_flux","outlier_resistance",
+    "planet_radius_rearth","planet_radius_rjup",
+]
+
+
 def summarize_dataset_health(df: pd.DataFrame) -> pd.DataFrame:
     """Aggregate dataset-level noise/health metrics from per-row feature table.
 
@@ -189,6 +207,38 @@ def extract_features_from_arrays(time: np.ndarray, flux: np.ndarray, verbose: bo
     # 7) Secondary eclipse depth approximation
     feats["secondary_depth"] = _compute_secondary_depth(time_arr, flux_detr_full, period, t0, duration_days)
 
+    # Derive secondary SNR-related fields if pipeline did not set them
+    # Prefer duration-specific cdpp if available; fall back to 6h
+    sec_snr = feats.get("secondary_depth_snr", np.nan)
+    if not np.isfinite(sec_snr):
+        cdpp6 = feats.get("cdpp_6h", np.nan)
+        if np.isfinite(feats["secondary_depth"]) and np.isfinite(cdpp6) and cdpp6 > 0:
+            sec_snr = float((feats["secondary_depth"] * 1e6) / cdpp6)
+            feats["secondary_depth_snr"] = sec_snr
+    # Normalize field names: allow pipeline to provide 'secondary_depth_snr_log'
+    if "secondary_depth_snr_log10" not in feats:
+        log_val = feats.get("secondary_depth_snr_log", np.nan)
+        if np.isfinite(log_val):
+            feats["secondary_depth_snr_log10"] = float(log_val)
+        elif np.isfinite(sec_snr) and sec_snr > 0:
+            feats["secondary_depth_snr_log10"] = float(np.log10(sec_snr))
+        else:
+            feats["secondary_depth_snr_log10"] = np.nan
+    if "secondary_depth_snr_capped" not in feats:
+        feats["secondary_depth_snr_capped"] = (
+            float(np.clip(sec_snr, 0.0, 100.0)) if np.isfinite(sec_snr) else np.nan
+        )
+
+    # Ratios/flags that may or may not be present in pipeline; fill best-effort
+    if "secondary_to_primary_ratio" not in feats:
+        prim = feats.get("depth_mean_per_transit", np.nan)
+        feats["secondary_to_primary_ratio"] = (
+            float(feats["secondary_depth"] / prim) if np.isfinite(prim) and prim > 0 and np.isfinite(feats["secondary_depth"]) else np.nan
+        )
+    feats.setdefault("secondary_is_eb_like", np.nan)
+    feats.setdefault("odd_even_depth_ratio", np.nan)
+    feats.setdefault("ingress_egress_asymmetry", np.nan)
+
     # 8) Flux distribution stats
     finite = np.isfinite(flux_scaled)
     if np.sum(finite) > 2:
@@ -203,7 +253,15 @@ def extract_features_from_arrays(time: np.ndarray, flux: np.ndarray, verbose: bo
     if verbose:
         print(f"Extracted {len(feats)} features")
 
-    return feats
+    # Reorder and ensure all desired fields exist
+    ordered = OrderedDict()
+    for key in DESIRED_FEATURE_ORDER:
+        ordered[key] = feats.get(key, np.nan)
+    # Include any additional fields from feats that are not in the desired list
+    for k, v in feats.items():
+        if k not in ordered:
+            ordered[k] = v
+    return ordered
 
 
 def find_flux_columns(columns, flux_prefix: str) -> list:
@@ -292,6 +350,9 @@ def process_exo_csv(csv_path: str,
             if verbose and total >= 10 and (len(results) % max(1, total // 10) == 0):
                 print(f"Processed {len(results)}/{total}")
         out_df = pd.DataFrame(results)
+        # Reorder columns to desired order when available
+        cols = [c for c in DESIRED_FEATURE_ORDER if c in out_df.columns] + [c for c in out_df.columns if c not in DESIRED_FEATURE_ORDER]
+        out_df = out_df.reindex(columns=cols)
     else:
         results_by_index: list[OrderedDict | None] = [None] * total
         submitted = 0
@@ -320,6 +381,8 @@ def process_exo_csv(csv_path: str,
                     print(f"Completed {completed}/{total}")
         results = [r for r in results_by_index if r is not None]
         out_df = pd.DataFrame(results)
+        cols = [c for c in DESIRED_FEATURE_ORDER if c in out_df.columns] + [c for c in out_df.columns if c not in DESIRED_FEATURE_ORDER]
+        out_df = out_df.reindex(columns=cols)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     out_df.to_csv(output_path, index=False)
     if verbose:

@@ -1,4 +1,23 @@
-# Imports
+# Configuration
+TARGET = "Kepler-5b"  # Change this to your target
+MISSION = "Kepler"  # or "TESS"
+SIGMA_CLIP = 5.0
+DOWNLOAD_ALL = True  # Set to True to download all available files and stitch them
+
+USE_TLS = False
+VERBOSE = True
+REFINE_DURATION = True
+SYSTEMATICS_CORRECTION = "off" # off, cbv, reg, both
+INCLUDE_ML_CUTOUTS = False
+ACCEPTANCE_FACTOR_FOR_SHORT_MOVES = 0.85
+
+# Eclipse
+MASK_ECLIPSES = False
+ECLIPSE_NSIGMA = 10.0
+ECLIPSE_MIN_DEPTH_ABS = 0.02
+ECLIPSE_MIN_GROUP = 6
+ECLIPSE_PAD_POINTS = 2
+ECLIPSE_MAX_MASK_FRACTION = 0.8
 
 import numpy as np
 import lightkurve as lk
@@ -7,7 +26,6 @@ from scipy.interpolate import UnivariateSpline
 from astropy.timeseries import BoxLeastSquares 
 from scipy import stats
 from scipy.ndimage import uniform_filter1d
-import warnings
 from scipy.stats import binned_statistic
 from statsmodels.tsa.stattools import acf as sm_acf
 from collections import OrderedDict
@@ -16,8 +34,10 @@ from scipy.stats import binned_statistic
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import time
 import os
+import datetime
+import pandas as pd
 
-# 1 - Download and clean light curve with systematics correction
+# 1 - Download and clean light curve with systematics corFINction
 
 def download_and_clean(target, mission="Kepler", sigma_clip=5.0, systematics_correction="off"):
     """
@@ -107,13 +127,21 @@ def detrend_with_bls_mask(tTime, flux,
                           bin_width=0.5, spline_s=0.001,
                           max_iter=4, sigma=3.0,
                           refine_duration=True,
-                          use_tls=True):
+                          use_tls=True,
+                          mask_eclipses=True,
+                          eclipse_nsigma=ECLIPSE_NSIGMA,
+                          eclipse_min_depth_abs=ECLIPSE_MIN_DEPTH_ABS,
+                          eclipse_min_group=ECLIPSE_MIN_GROUP,
+                          eclipse_pad_points=ECLIPSE_PAD_POINTS,
+                          eclipse_max_mask_fraction=ECLIPSE_MAX_MASK_FRACTION):
     bls_start = time.time()
     print("Starting BLS detrending and period search...")
     
     mask_valid = np.isfinite(tTime) & np.isfinite(flux)
     tTime = np.asarray(tTime)[mask_valid]
     flux = np.asarray(flux)[mask_valid]
+    # Keep a copy of raw (pre-stitch) flux for eclipse detection
+    _flux_raw_for_eclipse = np.asarray(flux).copy()
 
     # Pre-BLS stitching: per-segment robust normalization and tail winsorization
     try:
@@ -158,6 +186,70 @@ def detrend_with_bls_mask(tTime, flux,
     
     print(f"BLS input: {len(tTime):,} valid points")
 
+    # Eclipse masking before BLS
+    def _mask_deep_eclipses(time, flux,
+                            nsigma=8.0,
+                            min_depth_abs=0.02,
+                            min_group=3,
+                            pad_points=1,
+                            max_mask_fraction=0.2):
+        time = np.asarray(time)
+        flux = np.asarray(flux)
+        if time.size < 5:
+            return np.zeros_like(time, dtype=bool)
+        med = np.nanmedian(flux)
+        mad = np.nanmedian(np.abs(flux - med))
+        sigma_loc = 1.4826 * mad if (mad > 0 and np.isfinite(mad)) else np.nanstd(flux)
+        if not np.isfinite(sigma_loc) or sigma_loc <= 0:
+            sigma_loc = 1e-6
+        thr_sigma = med - nsigma * sigma_loc
+        thr_abs = med * (1.0 - float(min_depth_abs))
+        # Flag as eclipse if either condition is met (OR), not AND
+        dips = np.isfinite(flux) & ((flux < thr_sigma) | (flux < thr_abs))
+        if not np.any(dips):
+            return np.zeros_like(time, dtype=bool)
+        idx = np.flatnonzero(dips)
+        splits = np.where(np.diff(idx) > 1)[0]
+        starts = np.r_[0, splits + 1]
+        ends = np.r_[splits + 1, idx.size]
+        mask = np.zeros_like(time, dtype=bool)
+        for s, e in zip(starts, ends):
+            i0 = int(idx[s]); i1 = int(idx[e - 1])
+            if (i1 - i0 + 1) >= int(min_group):
+                j0 = max(0, i0 - int(pad_points))
+                j1 = min(time.size, i1 + int(pad_points) + 1)
+                mask[j0:j1] = True
+        frac = float(np.sum(mask)) / float(time.size)
+        if frac > float(max_mask_fraction):
+            return np.zeros_like(time, dtype=bool)
+        return mask
+
+    if mask_eclipses:
+        eclipse_mask = _mask_deep_eclipses(
+            tTime, _flux_raw_for_eclipse,
+            nsigma=eclipse_nsigma,
+            min_depth_abs=eclipse_min_depth_abs,
+            min_group=eclipse_min_group,
+            pad_points=eclipse_pad_points,
+            max_mask_fraction=eclipse_max_mask_fraction,
+        )
+    else:
+        eclipse_mask = np.zeros_like(tTime, dtype=bool)
+
+    time_bls = tTime[~eclipse_mask]
+    flux_bls = flux[~eclipse_mask]
+    if time_bls.size < 10:
+        time_bls = tTime; flux_bls = flux
+        eclipse_mask[:] = False
+    # Log masking statistics, including min/median/max of masked depths
+    if np.any(eclipse_mask):
+        masked_vals = _flux_raw_for_eclipse[eclipse_mask]
+        print(
+            f"Masked eclipses: {np.sum(eclipse_mask):,} points | depth med={float(np.nanmedian(1-masked_vals)):.5f}"
+        )
+    else:
+        print("Masked eclipses: 0 points")
+
     if max_period is None:
         span_days = float(tTime.max() - tTime.min())
         # Relaxed heuristic: allow up to 80% of span, capped at 200 days
@@ -165,15 +257,15 @@ def detrend_with_bls_mask(tTime, flux,
 
     print(f"Period search range: {min_period:.3f} to {max_period:.3f} days")
 
-    # Build a cadence-aware duration grid. Floor the minimum duration to ~3 samples.
-    diffs = np.diff(tTime)
+    # Build a cadence-aware duration grid. Floor the minimum duration to ~2 samples to accommodate LC data
+    diffs = np.diff(time_bls)
     diffs = diffs[np.isfinite(diffs)]
     if diffs.size:
         dt_days = np.median(diffs)
-        min_dur_floor = max(0.01, 3.0 * dt_days)
+        min_dur_floor = max(0.01, 2.0 * dt_days)
     else:
         dt_days = 0.02 
-        min_dur_floor = 0.06
+        min_dur_floor = 0.04
     # Cap durations to a fraction of the minimum period so BLS constraints are satisfied
     max_dur_cap = 0.2 * min_period 
     if not np.isfinite(max_dur_cap) or max_dur_cap <= 0:
@@ -187,7 +279,7 @@ def detrend_with_bls_mask(tTime, flux,
     print(f"Search grid: {n_periods} periods × {n_durations} durations = {n_periods * n_durations:,} combinations")
 
     print("Computing BLS periodogram...")
-    bls = BoxLeastSquares(tTime, flux)
+    bls = BoxLeastSquares(time_bls, flux_bls)
     periodogram = bls.power(period_grid, durations, oversample=oversample)
     print("BLS periodogram computed successfully")
 
@@ -282,6 +374,11 @@ def detrend_with_bls_mask(tTime, flux,
                             cand_periods.append(float(best_period) * float(m_mult))
                     cand_results = []
                     tmin = float(tTime.min()); tmax = float(tTime.max())
+                    # Compute baseline power once for acceptance tests
+                    if np.ndim(periodogram.power) == 1:
+                        base_power = float(np.nanmax(periodogram.power))
+                    else:
+                        base_power = float(np.nanmax(np.nanmax(periodogram.power, axis=1)))
                     for Pc in cand_periods:
                         if not (np.isfinite(Pc) and Pc > 0):
                             continue
@@ -312,22 +409,29 @@ def detrend_with_bls_mask(tTime, flux,
                         duty = D_c_best / P_c_best if P_c_best > 0 else np.nan
                         if not (np.isfinite(duty) and duty >= 0.001 and duty <= 0.2):
                             continue
+                        # Prevent drift to shorter aliases unless power improves markedly
+                        if P_c_best < float(best_period) and power_c < 1.25 * base_power:
+                            continue
                         n_epochs = int(max(1, np.floor((tmax - tmin) / P_c_best)))
                         cand_results.append({"P": P_c_best, "D": D_c_best, "t0": t0_c_best, "power": power_c, "epochs": n_epochs})
                     if cand_results:
                         # Include current best for fair comparison
-                        if np.ndim(periodogram.power) == 1:
-                            base_power = float(np.nanmax(periodogram.power))
-                        else:
-                            base_power = float(np.nanmax(np.nanmax(periodogram.power, axis=1)))
                         n_epochs_best = int(max(1, np.floor((tmax - tmin) / float(best_period))))
                         duty_best = float(best_duration / best_period) if best_period > 0 else np.nan
                         if np.isfinite(duty_best) and duty_best >= 0.001 and duty_best <= 0.2:
                             cand_results.append({"P": float(best_period), "D": float(best_duration), "t0": float(t0),
                                              "power": base_power, "epochs": n_epochs_best})
-                        cand_results.sort(key=lambda r: (r["power"], r["epochs"]), reverse=True)
+                        # Sort by power, then prefer fewer epochs (longer periods) to avoid short aliases
+                        cand_results.sort(key=lambda r: (r["power"], -r["epochs"]), reverse=True)
                         top = cand_results[0]
-                        if top["P"] != float(best_period):
+                        accept = False
+                        if top["P"] > float(best_period):
+                            # Accept longer period if power nearly as good
+                            accept = (top["power"] >= 0.98 * base_power)
+                        elif top["P"] < float(best_period):
+                            # Accept shorter only with strong power gain
+                            accept = (top["power"] >= 1.25 * base_power)
+                        if accept and (top["P"] != float(best_period)):
                             print(f"De-alias selected P={top['P']:.6f} (from {best_period:.6f}), epochs={top['epochs']}")
                             best_period = top["P"]; best_duration = top["D"]; t0 = top["t0"]
                 except Exception as _e:
@@ -402,7 +506,6 @@ def detrend_with_bls_mask(tTime, flux,
                     pass
 
                 # Optional TLS refinement around the selected period
-                tls_used = False
                 if use_tls:
                     try:
                         from transitleastsquares import transitleastsquares
@@ -429,13 +532,7 @@ def detrend_with_bls_mask(tTime, flux,
                     except Exception as _e:
                         print(f"TLS refinement skipped: {_e}")
     
-    # Step 3: Make TLS mask authoritative - rebuild transit mask with final parameters
-    if tls_used:
-        print("Rebuilding transit mask with TLS parameters...")
-        # Use TLS-derived parameters for more accurate mask
-        mask_transit = bls.transit_mask(tTime, best_period, best_duration, t0)
-    else:
-        mask_transit = bls.transit_mask(tTime, best_period, best_duration, t0)
+    mask_transit = bls.transit_mask(tTime, best_period, best_duration, t0)
     print(f"Transit mask created: {np.sum(mask_transit):,} transit points, {np.sum(~mask_transit):,} out-of-transit points")
 
     flux_work = flux.copy()
@@ -835,20 +932,19 @@ def calculate_detection_rate(flux_scaled, n_sigma=3):
 
 def _compute_secondary_depth(time, flux_detr, period, t0, dur_days):
     mask = np.isfinite(time) & np.isfinite(flux_detr)
-    if np.sum(mask) < 3:
+    if np.sum(mask) < 10:
         return np.nan
     t = np.asarray(time)[mask]; f = np.asarray(flux_detr)[mask]
-    phase = ((t - t0)/period) % 1.0
-    phase = (phase + 0.5) % 1.0 - 0.5
     phase_0to1 = ((t - t0)/period) % 1.0
     sec_center = 0.5
-    sec_half = 1.5 * (dur_days / period) if (period>0) else 0.05
+    sec_half = 1.5 * (dur_days / period) if (period > 0) else 0.05
     sel = (phase_0to1 > (sec_center - sec_half)) & (phase_0to1 < (sec_center + sec_half))
     if not np.any(sel):
         return np.nan
     baseline = np.nanmedian(f)
-    sec_min = np.nanmin(f[sel])
-    return float(baseline - sec_min)
+    # robust depth using low percentile to reduce single-point outlier influence
+    sec_low = np.nanpercentile(f[sel], 5.0)
+    return float(baseline - sec_low)
 
 def _compute_odd_even_depth_ratio(time, flux_detr, period, t0, dur_days):
     """Compute odd-even depth ratio to detect eclipsing binaries."""
@@ -1288,7 +1384,7 @@ def _extract_features_from_arrays(tTime, flux, verbose=False, refine_duration=Tr
     print(f"Time range: {time_arr.min():.2f} to {time_arr.max():.2f} days")
     print(f"Flux range: {flux_arr.min():.6f} to {flux_arr.max():.6f}")
 
-    flux_detr_full, trend_full, mask_transit, bls_info = detrend_with_bls_mask(time_arr, flux_arr, refine_duration=refine_duration, use_tls=False)
+    flux_detr_full, trend_full, mask_transit, bls_info = detrend_with_bls_mask(time_arr, flux_arr, refine_duration=refine_duration, use_tls=USE_TLS)
     period = float(bls_info.get("best_period", np.nan))
     t0 = float(bls_info.get("t0", np.nan))
     duration_days = float(bls_info.get("best_duration", np.nan))
@@ -1389,6 +1485,16 @@ def _extract_features_from_arrays(tTime, flux, verbose=False, refine_duration=Tr
 
     feats["secondary_depth"] = _compute_secondary_depth(time_arr, flux_detr_full, period, t0, duration_days)
 
+    # CDPP-based secondary SNR (cadence-invariant, ppm-consistent)
+    cdpp_interp_for_duration = _interp_cdpp(cdpp, duration_hours)
+    if np.isfinite(feats["secondary_depth"]) and np.isfinite(cdpp_interp_for_duration) and cdpp_interp_for_duration > 0:
+        sec_snr = float((feats["secondary_depth"] * 1e6) / cdpp_interp_for_duration)
+    else:
+        sec_snr = np.nan
+    feats["secondary_depth_snr"] = sec_snr
+    feats["secondary_depth_snr_log"] = float(np.log1p(sec_snr)) if np.isfinite(sec_snr) else np.nan
+    feats["secondary_depth_snr_capped"] = float(np.clip(sec_snr, 0.0, 100.0)) if np.isfinite(sec_snr) else np.nan
+
     # Step 4: Add EB/grazing discriminants
     print("Computing EB/grazing discriminants...")
     feats["odd_even_depth_ratio"] = _compute_odd_even_depth_ratio(time_arr, flux_detr_full, period, t0, duration_days)
@@ -1480,7 +1586,7 @@ def extract_all_features_v3(lc):
     flux = lc.flux.value
     
     # Use the internal function for feature extraction
-    feats = _extract_features_from_arrays(time, flux, verbose=True, refine_duration=True)
+    feats = _extract_features_from_arrays(time, flux, verbose=VERBOSE, refine_duration=REFINE_DURATION)
     
     # Add stellar radius information if available
     if "RADIUS" in lc.meta and np.isfinite(lc.meta["RADIUS"]):
@@ -1503,7 +1609,7 @@ def batch_extract_features_from_targets(targets, mission="Kepler", sigma_clip=5.
 
     def _worker(targ):
         try:
-            feats = extract_all_features_v2(targ, mission=mission, sigma_clip=sigma_clip, verbose=False, refine_duration=refine_duration, systematics_correction=systematics_correction, include_ml_cutouts=include_ml_cutouts)
+            feats = extract_all_features_v2(targ, mission=mission, sigma_clip=sigma_clip, verbose=verbose, refine_duration=refine_duration, systematics_correction=systematics_correction, include_ml_cutouts=include_ml_cutouts)
             out = OrderedDict(feats)
             out["target"] = targ
             return out
