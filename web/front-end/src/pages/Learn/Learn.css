@@ -4,14 +4,14 @@
   min-height: 100vh;
   padding: 2rem;
   font-family: Arial, Helvetica, sans-serif;
-  position: fixed;
-  inset: 0;
-  /* Removido: overflow-y: auto; */
-  overflow: hidden; /* Evita qualquer scroll */
+  /* position: fixed;  remove */
+  /* inset: 0; remove */
+  overflow: hidden; /* evita scroll interno */
 }
 
+
 .learn-text {
-  max-width: none!important;
+  max-width: 70%;
 }
 
 /* Hero layout */
@@ -19,7 +19,7 @@
   display: flex;
   flex-direction: column;
   gap: 3rem;
-  margin-top: 5rem;
+  margin-top: 1rem;
   padding: 0 2rem;
 }
 
@@ -48,6 +48,7 @@
   font-size: 1.2rem;
   line-height: 1.6;
   margin: 0;
+  width: 80%;
 }
 
 /* Botões */
@@ -86,6 +87,11 @@
 
 .classify:hover {
   background: white;
+  color: black;
+}
+
+.training:hover {
+  background: #ffcc00;
   color: black;
 }
 

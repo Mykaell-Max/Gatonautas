@@ -18,9 +18,9 @@ const LearnView: React.FC = () => {
         {/* Bloco de texto */}
         <div className="learn-text">
           <h1>Learn.</h1>
-          <div className="learn-grid">
+         
             {/* Coluna da esquerda */}
-            <div className="learn-left">
+           
               
                 <p>
                   From the fundamentals of planetary transits to Machine Learning tools, dive into interactive lessons and challenges.
@@ -33,7 +33,7 @@ const LearnView: React.FC = () => {
                   <button className="training">Training</button>
                 </Link>
               </div>
-            </div>
+           
 
             {/* Coluna da direita */}
             <div className="learn-right">
@@ -42,7 +42,7 @@ const LearnView: React.FC = () => {
                 <button className="classify">Classify</button>
               </div>
             </div>
-          </div>
+          
         </div>
       </div>
 
