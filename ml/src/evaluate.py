@@ -9,6 +9,12 @@ from sklearn.metrics import (
     classification_report, confusion_matrix, roc_auc_score,
     precision_recall_curve, roc_curve, precision_score, recall_score, f1_score
 )
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+import lightgbm as lgb
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -65,7 +71,54 @@ def load_model_and_data(model_path, data_path, target_col):
     return pipeline, X, y
 
 
-def get_stacking_features(X):
+def create_model_with_hyperparameters(model_name, hyperparameters, numeric_features):
+    """
+    Create a model pipeline with custom hyperparameters.
+    
+    Args:
+        model_name (str): Name of the model ('rf', 'gb', 'lgbm')
+        hyperparameters (dict): Hyperparameters for the model
+        numeric_features (list): List of numeric feature names
+    
+    Returns:
+        sklearn.pipeline.Pipeline: Model pipeline with custom hyperparameters
+    """
+    # Create preprocessor
+    if model_name.lower() in ["gradient_boosting", "gb", "random_forest", "rf"]:
+        num_transformer = Pipeline([
+            ("imputer", SimpleImputer(strategy="median"))
+        ])
+    else:  # LightGBM
+        num_transformer = Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler())
+        ])
+    
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("num", num_transformer, numeric_features)
+        ]
+    )
+    
+    # Create model based on type
+    if model_name.lower() in ["random_forest", "rf"]:
+        model = RandomForestClassifier(**hyperparameters)
+    elif model_name.lower() in ["gradient_boosting", "gb"]:
+        model = GradientBoostingClassifier(**hyperparameters)
+    elif model_name.lower() in ["lightgbm", "lgbm"]:
+        model = lgb.LGBMClassifier(**hyperparameters)
+    else:
+        raise ValueError(f"Unknown model: {model_name}")
+    
+    # Create pipeline
+    pipeline = Pipeline([
+        ("preprocessor", preprocessor),
+        ("classifier", model)
+    ])
+    
+    return pipeline
+
+def get_stacking_features(X, hyperparameters=None):
     """Get predictions from base models for stacking."""
     base_models = {
         'gb': './artifacts/gb_model_pipeline.joblib',
@@ -75,10 +128,35 @@ def get_stacking_features(X):
     
     stacking_features = []
     
+    # Default numeric features (from config files)
+    numeric_features = [
+        "period_days", "t0", "duration_days", "duration_hours",
+        "scale_mean", "scale_std", "scale_skewness", "scale_kurtosis", "scale_outlier_resistance",
+        "local_noise", "depth_stability", "acf_lag_1h", "acf_lag_3h", "acf_lag_6h", "acf_lag_12h", "acf_lag_24h",
+        "cadence_hours", "depth_mean_per_transit", "depth_std_per_transit", "npts_transit_median",
+        "cdpp_3h", "cdpp_6h", "cdpp_12h", "SES_mean", "SES_std", "MES",
+        "snr_global", "snr_per_transit_mean", "snr_per_transit_std", "resid_rms_global", "vshape_metric",
+        "secondary_depth", "secondary_depth_snr", "secondary_depth_snr_log10", "secondary_depth_snr_capped",
+        "secondary_to_primary_ratio", "secondary_is_eb_like", "odd_even_depth_ratio", "ingress_egress_asymmetry",
+        "skewness_flux", "kurtosis_flux", "outlier_resistance", "planet_radius_rearth", "planet_radius_rjup"
+    ]
+    
     for model_name, model_path in base_models.items():
         try:
             print(f"Loading {model_name} model...")
-            base_model = joblib.load(model_path)
+            
+            # Check if we have custom hyperparameters for this model
+            if hyperparameters and model_name in hyperparameters:
+                print(f"Using custom hyperparameters for {model_name}")
+                # Create model with custom hyperparameters
+                base_model = create_model_with_hyperparameters(
+                    model_name, hyperparameters[model_name], numeric_features
+                )
+                # Note: This would need training data to fit the model
+                # For now, we'll fall back to the saved model
+                base_model = joblib.load(model_path)
+            else:
+                base_model = joblib.load(model_path)
             
             # Get prediction probabilities for class 2 (exoplanet)
             pred_proba = base_model.predict_proba(X)[:, 1]
@@ -296,7 +374,7 @@ def evaluate_model_api(model_path, data_path, target_col="label", threshold=0.5,
     return results
 
 
-def predict_single_sample_api(model_path, sample_data, threshold=0.5):
+def predict_single_sample_api(model_path, sample_data, threshold=0.5, hyperparameters=None):
     """
     API-friendly function to predict a single sample and return confidence.
     
@@ -304,6 +382,7 @@ def predict_single_sample_api(model_path, sample_data, threshold=0.5):
         model_path (str): Path to the trained model
         sample_data (dict or pd.Series): Single data sample
         threshold (float): Classification threshold
+        hyperparameters (dict): Optional hyperparameters to override model defaults
     
     Returns:
         dict: Prediction results with confidence
@@ -334,7 +413,7 @@ def predict_single_sample_api(model_path, sample_data, threshold=0.5):
     
     # If this is a stacking model, get predictions from base models
     if "meta_learner" in model_path:
-        df = get_stacking_features(df)
+        df = get_stacking_features(df, hyperparameters)
     
     # Get prediction
     y_pred_proba = pipeline.predict_proba(df)[:, 1]

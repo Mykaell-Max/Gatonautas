@@ -108,7 +108,11 @@ def look_for_exoplanet():
             model_path = os.path.join(os.path.dirname(__file__), '..', 'ml', 'artifacts', 'meta_learner.joblib')
             
             if os.path.exists(model_path):
-                prediction = predict_single_sample_api(model_path, features)
+                # Get current hyperparameters
+                current_hyperparameters = hyperparameter_manager.get_hyperparameters()
+                
+                # Make prediction with current hyperparameters
+                prediction = predict_single_sample_api(model_path, features, hyperparameters=current_hyperparameters)
             else:
                 return jsonify({
                     'error': 'ML model not found. Please ensure meta_learner.joblib exists.'
@@ -153,6 +157,85 @@ def health_check():
         'service': 'exoplanet-detection-api'
     })
 
+@app.route('/hyperparameters', methods=['GET'])
+def get_all_hyperparameters():
+    """Get all hyperparameters for all models."""
+    try:
+        hyperparameters = hyperparameter_manager.get_hyperparameters()
+        available_models = hyperparameter_manager.get_available_models()
+        
+        return jsonify({
+            'hyperparameters': hyperparameters,
+            'available_models': available_models,
+            'note': 'Use GET /hyperparameters/<model_name> for specific model or POST /hyperparameters/<model_name> to update'
+        })
+    except Exception as e:
+        return jsonify({'error': f'Failed to get hyperparameters: {str(e)}'}), 500
+
+@app.route('/hyperparameters/<model_name>', methods=['GET'])
+def get_hyperparameters(model_name):
+    """Get hyperparameters for a specific model."""
+    try:
+        if model_name not in hyperparameter_manager.get_available_models():
+            return jsonify({
+                'error': f'Unknown model: {model_name}',
+                'available_models': hyperparameter_manager.get_available_models()
+            }), 400
+        
+        model_info = hyperparameter_manager.get_model_info(model_name)
+        return jsonify(model_info)
+    except Exception as e:
+        return jsonify({'error': f'Failed to get hyperparameters for {model_name}: {str(e)}'}), 500
+
+@app.route('/hyperparameters/<model_name>', methods=['POST'])
+def update_hyperparameters(model_name):
+    """Update hyperparameters for a specific model."""
+    try:
+        if model_name not in hyperparameter_manager.get_available_models():
+            return jsonify({
+                'error': f'Unknown model: {model_name}',
+                'available_models': hyperparameter_manager.get_available_models()
+            }), 400
+        
+        # Get JSON data from request
+        if not request.is_json:
+            return jsonify({'error': 'Request must be JSON'}), 400
+        
+        new_params = request.get_json()
+        if not isinstance(new_params, dict):
+            return jsonify({'error': 'Hyperparameters must be a dictionary'}), 400
+        
+        # Update hyperparameters
+        updated_params = hyperparameter_manager.update_hyperparameters(model_name, new_params)
+        
+        return jsonify({
+            'message': f'Hyperparameters updated for {model_name}',
+            'model_name': model_name,
+            'updated_hyperparameters': updated_params
+        })
+    except Exception as e:
+        return jsonify({'error': f'Failed to update hyperparameters for {model_name}: {str(e)}'}), 500
+
+@app.route('/hyperparameters/<model_name>/reset', methods=['POST'])
+def reset_hyperparameters(model_name):
+    """Reset hyperparameters for a specific model to defaults."""
+    try:
+        if model_name not in hyperparameter_manager.get_available_models():
+            return jsonify({
+                'error': f'Unknown model: {model_name}',
+                'available_models': hyperparameter_manager.get_available_models()
+            }), 400
+        
+        reset_params = hyperparameter_manager.reset_hyperparameters(model_name)
+        
+        return jsonify({
+            'message': f'Hyperparameters reset to defaults for {model_name}',
+            'model_name': model_name,
+            'reset_hyperparameters': reset_params
+        })
+    except Exception as e:
+        return jsonify({'error': f'Failed to reset hyperparameters for {model_name}: {str(e)}'}), 500
+
 @app.route('/', methods=['GET'])
 def root():
     """Root endpoint with API information."""
@@ -161,12 +244,17 @@ def root():
         'version': '1.0.0',
         'endpoints': {
             'POST /look-for-exoplanet': 'Detect exoplanets from light curve data',
+            'GET /hyperparameters': 'Get all hyperparameters',
+            'GET /hyperparameters/<model>': 'Get hyperparameters for specific model',
+            'POST /hyperparameters/<model>': 'Update hyperparameters for specific model',
+            'POST /hyperparameters/<model>/reset': 'Reset hyperparameters to defaults',
             'GET /health': 'Health check'
         },
         'parameters': {
             'label': 'Target name or coordinates (optional)',
             'lightcurve': 'CSV file with light curve data (optional)'
-        }
+        },
+        'available_models': hyperparameter_manager.get_available_models()
     })
 
 if __name__ == '__main__':

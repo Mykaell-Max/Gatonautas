@@ -1,1 +1,1 @@
-# Utils package for exoplanet detection API
+# Utils package for the Exoplanet Detection API
