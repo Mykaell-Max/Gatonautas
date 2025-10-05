@@ -1,0 +1,73 @@
+data:
+  train_path: data/processed/kepler_lc/train.csv
+  test_path: data/processed/kepler_lc/test.csv
+  target: label
+
+features:
+  numeric: [
+    "period_days", "t0", "duration_days", "duration_hours",
+    "scale_mean", "scale_std", "scale_skewness", "scale_kurtosis", "scale_outlier_resistance",
+    "local_noise", "depth_stability", "acf_lag_1h", "acf_lag_3h", "acf_lag_6h", "acf_lag_12h", "acf_lag_24h",
+    "cadence_hours", "depth_mean_per_transit", "depth_std_per_transit", "npts_transit_median",
+    "cdpp_3h", "cdpp_6h", "cdpp_12h", "SES_mean", "SES_std", "MES",
+    "snr_global", "snr_per_transit_mean", "snr_per_transit_std", "resid_rms_global", "vshape_metric",
+    "secondary_depth", "secondary_depth_snr", "secondary_depth_snr_log10", "secondary_depth_snr_capped",
+    "secondary_to_primary_ratio", "secondary_is_eb_like", "odd_even_depth_ratio", "ingress_egress_asymmetry",
+    "skewness_flux", "kurtosis_flux", "outlier_resistance", "planet_radius_rearth", "planet_radius_rjup"
+  ]
+  categorical: []
+
+model:
+  name: "lightgbm"
+  params:
+    random_state: 42
+    n_estimators: 100
+    learning_rate: 0.1
+    max_depth: 5
+    num_leaves: 31
+    min_child_samples: 20
+    subsample: 0.8
+    colsample_bytree: 0.3
+    reg_alpha: 0.0
+    reg_lambda: 0.5
+    class_weight: null
+    objective: "binary"
+    metric: "auc"
+    boosting_type: "gbdt"
+    verbose: -1
+  
+  search:
+    method: "random"        # "grid" | "random" | "halving_grid"
+    cv: 5
+    scoring: "pr_auc"       # "roc_auc" | "pr_auc" | "f1_pos2" | "precision_pos2" | "recall_pos2"
+    n_iter: 30              # used if method == "random"
+    n_jobs: -1
+    param_grid:
+      classifier__n_estimators: [100, 200, 300, 400, 500]
+      classifier__learning_rate: [0.01, 0.05, 0.1, 0.15, 0.2]
+      classifier__max_depth: [3, 4, 5, 6, 7, 8]
+      classifier__num_leaves: [15, 31, 63, 127, 255]
+      classifier__min_child_samples: [10, 20, 30, 40, 50]
+      classifier__subsample: [0.6, 0.7, 0.8, 0.9, 1.0]
+      classifier__colsample_bytree: [0.6, 0.7, 0.8, 0.9, 1.0]
+      classifier__reg_alpha: [0.0, 0.1, 0.5, 1.0]
+      classifier__reg_lambda: [0.0, 0.1, 0.5, 1.0]
+
+artifacts:
+  dir: artifacts
+  model_path: artifacts/lgbm_model_pipeline.joblib
+  metrics_path: artifacts/lgbm_metrics.json
+  feature_schema_path: artifacts/lgbm_feature_schema.json
+  threshold_path: artifacts/lgbm_threshold.json
+
+evaluation:
+  test_size: 0.2
+  random_state: 68  # Consistent with trains.py RDS
+  cv_folds: 5
+  threshold_metric: "f1"
+
+sampling:
+  use_sampling: false
+  smote_strategy: 0.25
+  under_strategy: 0.75
+  random_state: 68
