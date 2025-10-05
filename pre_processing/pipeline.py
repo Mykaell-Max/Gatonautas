@@ -39,7 +39,7 @@ import pandas as pd
 
 # 1 - Download and clean light curve with systematics corFINction
 
-def download_and_clean(target, mission="Kepler", sigma_clip=5.0, systematics_correction="off"):
+def download_and_clean(target, mission="Kepler", sigma_clip=5.0, systematics_correction="off", download_all=True):
     """
     Download and clean light curve with optional systematics correction.
     
@@ -53,8 +53,14 @@ def download_and_clean(target, mission="Kepler", sigma_clip=5.0, systematics_cor
         Sigma clipping threshold for outlier removal
     systematics_correction : str
         Systematics correction method: "off", "cbv", "reg", or "both"
+    download_all : bool
+        Whether to download all available files and stitch them
     """
-    lc = lk.search_lightcurve(target, mission=mission).download()
+    if download_all:
+        lc = lk.search_lightcurve(target, mission=mission).download()
+    else:
+        lc = lk.search_lightcurve(target, mission=mission).download_all()
+        lc = lc.stitch()
     lc = lc.remove_nans()
     lc = lc.normalize()
     
