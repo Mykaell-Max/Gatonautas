@@ -4,8 +4,8 @@ Extract features from an exo-style CSV (LABEL + FLUX1..FLUXN) using the
 array-based pipeline functions in src/pipeline.py.
 
 Usage (from repo root with venv active):
-  python pre_processing/extract_csv.py \
-    --csv pre_processing/data/exoTest.csv \
+  python pre_processing/helpers/extract_csv.py \
+    --csv pre_processing/data/exoTrain.csv \
     --out pre_processing/batch_results.csv \
     --cadence-min 30 --label-col LABEL --flux-prefix FLUX --max-rows 128 --workers 8
 """
@@ -106,7 +106,7 @@ def summarize_dataset_health(df: pd.DataFrame) -> pd.DataFrame:
 
     return pd.DataFrame([out])
 
-def extract_features_from_arrays(time: np.ndarray, flux: np.ndarray, verbose: bool = False, refine_duration: bool = True) -> OrderedDict:
+def extract_features_from_arrays(time: np.ndarray, flux: np.ndarray, verbose: bool = False, refine_duration: bool = True, use_tls: bool = False) -> OrderedDict:
     """Extract features from uniform time/flux arrays using pipeline primitives."""
     feats: OrderedDict = OrderedDict()
 
@@ -119,7 +119,7 @@ def extract_features_from_arrays(time: np.ndarray, flux: np.ndarray, verbose: bo
     flux_arr = np.asarray(flux)[mask_valid]
 
     # 1) Detrend and rough transit search via BLS
-    flux_detr_full, trend_full, mask_transit, bls_info = detrend_with_bls_mask(time_arr, flux_arr, refine_duration=refine_duration)
+    flux_detr_full, trend_full, mask_transit, bls_info = detrend_with_bls_mask(time_arr, flux_arr, refine_duration=refine_duration, use_tls=use_tls)
     period = float(bls_info.get("best_period", np.nan))
     t0 = float(bls_info.get("t0", np.nan))
     duration_days = float(bls_info.get("best_duration", np.nan))
@@ -223,7 +223,7 @@ def find_flux_columns(columns, flux_prefix: str) -> list:
 
 
 def _row_worker(args):
-    i, time, flux_values, label_value, label_col, refine_duration = args
+    i, time, flux_values, label_value, label_col, refine_duration, use_tls = args
     out = OrderedDict()
     out["row_index"] = int(i)
     if label_col is not None:
@@ -235,7 +235,7 @@ def _row_worker(args):
             med = 1.0
         flux_values = np.where(np.isfinite(flux_values), flux_values, med)
         flux_norm = flux_values / med
-        feats = extract_features_from_arrays(time, flux_norm, verbose=False, refine_duration=refine_duration)
+        feats = extract_features_from_arrays(time, flux_norm, verbose=False, refine_duration=refine_duration, use_tls=use_tls)
         out.update(feats)
     except Exception as e:
         out["error"] = str(e)
@@ -251,7 +251,8 @@ def process_exo_csv(csv_path: str,
                     verbose: bool = True,
                     n_workers: int | None = None,
                     health_out: str | None = None,
-                    refine_duration: bool = True) -> pd.DataFrame:
+                    refine_duration: bool = True,
+                    use_tls: bool = False) -> pd.DataFrame:
     """Process an exo-style CSV and write per-row features to CSV."""
     df = pd.read_csv(csv_path)
     if max_rows is not None and max_rows > 0:
@@ -285,6 +286,7 @@ def process_exo_csv(csv_path: str,
                 (int(row[label_col]) if (label_col in df.columns and np.isfinite(row[label_col])) else (row[label_col] if label_col in df.columns else None)),
                 (label_col if label_col in df.columns else None),
                 refine_duration,
+                use_tls,
             )
             results.append(_row_worker(args))
             if verbose and total >= 10 and (len(results) % max(1, total // 10) == 0):
@@ -304,6 +306,7 @@ def process_exo_csv(csv_path: str,
                     (int(row[label_col]) if (label_col in df.columns and np.isfinite(row[label_col])) else (row[label_col] if label_col in df.columns else None)),
                     (label_col if label_col in df.columns else None),
                     refine_duration,
+                    use_tls,
                 )
                 futures.append(ex.submit(_row_worker, args))
                 submitted += 1
@@ -349,6 +352,7 @@ def parse_args():
     p.add_argument("--workers", type=int, default=None, help="Number of parallel workers (default: CPU count)")
     p.add_argument("--health-out", default=None, help="Optional path to dataset health summary (.csv or .txt)")
     p.add_argument("--no-refine", action="store_true", help="Disable two-pass BLS duration refinement")
+    p.add_argument("--use-tls", action="store_true", help="Enable TransitLeastSquares refinement (adds runtime)")
     return p.parse_args()
 
 
@@ -365,6 +369,7 @@ def main():
         n_workers=args.workers,
         health_out=args.health_out,
         refine_duration=not args.no_refine,
+        use_tls=args.use_tls,
     )
 
 

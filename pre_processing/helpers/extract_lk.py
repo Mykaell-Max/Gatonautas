@@ -5,6 +5,7 @@ Saves the downloaded light curve data to CSV and uses it for feature extraction.
 
 Usage (from repo root with venv active):
   python pre_processing/helpers/extract_lk.py --target HAT-P-7 --mission Kepler --out pre_processing/hatp7_features.csv
+  python pre_processing/helpers/extract_lk.py --target HAT-P-7 --mission Kepler --download-all --out pre_processing/hatp7_features.csv
 """
 
 import os
@@ -29,13 +30,24 @@ if parent_dir not in sys.path:
 from pipeline import extract_all_features_from_csv
 
 
-def download_and_save_lightcurve(target: str, mission: str, sigma_clip: float, verbose: bool):
+def download_and_save_lightcurve(target: str, mission: str, sigma_clip: float, verbose: bool, download_all: bool = False):
     """Download light curve data and save to CSV file."""
     if verbose:
         print(f"Downloading light curve for {target} from {mission}...")
     
-    # Download and clean the light curve
-    lc = lk.search_lightcurve(target, mission=mission).download()
+    # Search for light curves
+    search_result = lk.search_lightcurve(target, mission=mission)
+    
+    # Download based on download_all parameter
+    if download_all:
+        if verbose:
+            print(f"Downloading all {len(search_result)} available files...")
+        lc_collection = search_result.download_all()
+        # Combine all light curves into one
+        lc = lc_collection.stitch()
+    else:
+        lc = search_result.download()
+    
     lc = lc.remove_nans()
     lc = lc.normalize()
     lc = lc.remove_outliers(sigma=sigma_clip)
@@ -64,10 +76,10 @@ def download_and_save_lightcurve(target: str, mission: str, sigma_clip: float, v
     return csv_path, lc
 
 
-def run_lightkurve_extraction(target: str, mission: str, sigma_clip: float, verbose: bool):
+def run_lightkurve_extraction(target: str, mission: str, sigma_clip: float, verbose: bool, download_all: bool = False):
     """Download light curve, save to CSV, and extract features."""
     # Download and save the light curve
-    csv_path, lc = download_and_save_lightcurve(target, mission, sigma_clip, verbose)
+    csv_path, lc = download_and_save_lightcurve(target, mission, sigma_clip, verbose, download_all)
     
     # Extract features using the saved CSV data
     feats = extract_all_features_from_csv(csv_path=csv_path, verbose=verbose)
@@ -80,6 +92,7 @@ def parse_args():
     p.add_argument("--lightcurve-path", help="Path to light curve data")
     p.add_argument("--mission", default="Kepler", help="Mission name (Kepler/TESS)")
     p.add_argument("--sigma-clip", type=float, default=5.0, help="Outlier sigma for cleaning")
+    p.add_argument("--download-all", action="store_true", help="Download all available light curve files instead of just the first one")
     p.add_argument("--out", required=True, help="Path to output (csv or json)")
     p.add_argument("--quiet", action="store_true", help="Reduce verbosity")
     return p.parse_args()
@@ -95,6 +108,7 @@ def main():
             mission=args.mission,
             sigma_clip=args.sigma_clip,
             verbose=not args.quiet,
+            download_all=args.download_all,
         )
 
     out_path = args.out
