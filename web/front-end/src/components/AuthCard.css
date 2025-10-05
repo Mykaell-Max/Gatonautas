@@ -1,0 +1,223 @@
+/* Reset básico */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
+
+/* Overlay do modal */
+.auth-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  perspective: 1000px; /* necessário para 3D flip */
+}
+
+/* Container do modal com flip */
+.auth-modal {
+  width: 90%;
+  max-width: 420px;
+  height: 580px; /* Altura suficiente para front e back */
+  padding: 48px 32px; /* espaço lateral ajustado */
+  border-radius: 24px;
+  background: white;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  transform-style: preserve-3d;
+  transition: transform 0.8s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Flip quando mudar */
+.auth-modal.flip {
+  transform: rotateY(180deg);
+}
+
+/* Front e back do modal */
+.auth-front, .auth-back {
+  position: absolute;
+  width: 100%;
+  height: 100%; /* Preencher todo o modal */
+  backface-visibility: hidden;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: transform 0.8s;
+  padding: 0 8px; /* evita colar na borda */
+}
+
+.auth-back {
+  transform: rotateY(180deg);
+}
+
+/* Título */
+.auth-modal h2 {
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 32px 0;
+  color: #000;
+  padding: 0 8px; /* evita colar na borda */
+}
+
+/* Formulário */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 8px; /* espaço lateral interno */
+}
+
+.form-group {
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 14px 16px;
+  padding-right: 40px;
+  border: none;
+  border-bottom: 2px solid #e0e0e0;
+  font-size: 15px;
+  transition: border-color 0.3s;
+  background: transparent;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-bottom-color: #000;
+}
+
+.form-group input::placeholder {
+  color: #999;
+}
+
+.input-icon {
+  position: absolute;
+  right: 12px;
+  top: 40px;
+  font-size: 18px;
+  color: #666;
+}
+
+/* Botão de submit */
+.auth-submit-btn {
+  width: 100%;
+  padding: 16px;
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 8px;
+  box-sizing: border-box; /* garante que padding não quebre layout */
+}
+
+.auth-submit-btn:hover {
+  background-color: #333;
+}
+
+/* Toggle link */
+.auth-toggle-text {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin: 16px 0;
+}
+
+.auth-toggle-link {
+  color: #000;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.auth-toggle-link:hover {
+  text-decoration: underline;
+}
+
+/* Divider */
+.auth-divider {
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  margin: 20px 0;
+  position: relative;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 35%;
+  height: 1px;
+  background-color: #e0e0e0;
+}
+
+.auth-divider::before { left: 0; }
+.auth-divider::after { right: 0; }
+
+/* Social buttons */
+.social-login-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.social-btn {
+  width: 56px;
+  height: 56px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-btn:hover {
+  transform: scale(1.1);
+}
+
+.social-btn svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* Botão de fechar */
+.auth-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #333;
+  z-index: 10;
+  transition: color 0.2s;
+}
+
+.auth-close-btn:hover {
+  color: #000;
+}
