@@ -283,7 +283,7 @@ def find_flux_columns(columns, flux_prefix: str) -> list:
 def _row_worker(args):
     i, time, flux_values, label_value, label_col, refine_duration, use_tls = args
     out = OrderedDict()
-    out["row_index"] = int(i)
+    out["row_index"] = int(i)  # Keep for parallel processing order
     if label_col is not None:
         out["label"] = label_value
     try:
@@ -350,8 +350,14 @@ def process_exo_csv(csv_path: str,
             if verbose and total >= 10 and (len(results) % max(1, total // 10) == 0):
                 print(f"Processed {len(results)}/{total}")
         out_df = pd.DataFrame(results)
-        # Reorder columns to desired order when available
-        cols = [c for c in DESIRED_FEATURE_ORDER if c in out_df.columns] + [c for c in out_df.columns if c not in DESIRED_FEATURE_ORDER]
+        # Remove row_index column and reorder: label first, then desired feature order
+        if "row_index" in out_df.columns:
+            out_df = out_df.drop(columns=["row_index"])
+        cols = []
+        if "label" in out_df.columns:
+            cols.append("label")
+        cols.extend([c for c in DESIRED_FEATURE_ORDER if c in out_df.columns])
+        cols.extend([c for c in out_df.columns if c not in cols])
         out_df = out_df.reindex(columns=cols)
     else:
         results_by_index: list[OrderedDict | None] = [None] * total
@@ -381,7 +387,14 @@ def process_exo_csv(csv_path: str,
                     print(f"Completed {completed}/{total}")
         results = [r for r in results_by_index if r is not None]
         out_df = pd.DataFrame(results)
-        cols = [c for c in DESIRED_FEATURE_ORDER if c in out_df.columns] + [c for c in out_df.columns if c not in DESIRED_FEATURE_ORDER]
+        # Remove row_index column and reorder: label first, then desired feature order
+        if "row_index" in out_df.columns:
+            out_df = out_df.drop(columns=["row_index"])
+        cols = []
+        if "label" in out_df.columns:
+            cols.append("label")
+        cols.extend([c for c in DESIRED_FEATURE_ORDER if c in out_df.columns])
+        cols.extend([c for c in out_df.columns if c not in cols])
         out_df = out_df.reindex(columns=cols)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     out_df.to_csv(output_path, index=False)
