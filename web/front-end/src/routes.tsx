@@ -9,6 +9,7 @@ import Quiz from "./pages/Quiz/quiz";
 import Classify from "./pages/Classify/Classify";
 import Quiz2 from "./pages/Quiz2/Quiz2";
 import ExoLearn from "./pages/ExoLearn/ExoLearn";
+import ExoClassify from "./pages/ExoClassify/ExoClassify";
 
 export const AppRoutes = () =>{
     return(
@@ -21,6 +22,7 @@ export const AppRoutes = () =>{
                 <Route path="/UploadData" element={<UploadData/>} />
                 <Route path="/Quiz" element={<Quiz />} />
                 <Route path="/Classify" element={<Classify/>} />
+                <Route path="/ExoClassify" element={<ExoClassify/>} />
                 <Route path="/Quiz2" element={<Quiz2/>} />
                 <Route path="/ExoLearn" element={<ExoLearn/>} />
 

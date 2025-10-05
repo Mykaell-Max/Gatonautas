@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import "./Classify.css";
+import "./ExoClassify.css";
 import { Link } from "react-router-dom";
 
 // Import das imagens
@@ -12,7 +12,6 @@ import img2QST from "./images/img2QST.png";
 type PracticeQuestion = {
   instruction: string;
   image: string;
-  correctArea: { x1: number; y1: number; x2: number; y2: number };
 };
 
 // Array de perguntas
@@ -20,12 +19,10 @@ const questions: PracticeQuestion[] = [
   {
     instruction: "Draw a rectangle around the transit",
     image: img1QST,
-    correctArea: { x1: 400.5078125, y1: 40.0859375, x2: 542.5078125, y2: 309.0859375 },
   },
   {
     instruction: "Draw a rectangle around the transit",
     image: img2QST,
-    correctArea: { x1: 221.1328125  , y1: 46.5703125  , x2: 277.1328125  , y2: 302.5703125 },
   },
   // continue adicionando todas aqui
 ];
@@ -44,7 +41,6 @@ const Practice = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  // Desenho no canvas
   useEffect(() => {
     if (canvasRef.current && imageRef.current) {
       const canvas = canvasRef.current;
@@ -68,16 +64,6 @@ const Practice = () => {
           ctx.strokeStyle = showFeedback ? (isCorrect ? "#22c55e" : "#ef4444") : "#ffcc00";
           ctx.lineWidth = 3;
           ctx.strokeRect(drawnRect.x, drawnRect.y, drawnRect.width, drawnRect.height);
-        }
-
-        // Retângulo correto se errou
-        if (showFeedback && !isCorrect) {
-          ctx.strokeStyle = "#22c55e";
-          ctx.lineWidth = 3;
-          ctx.setLineDash([5, 5]);
-          const correct = questions[currentStep].correctArea;
-          ctx.strokeRect(correct.x1, correct.y1, correct.x2 - correct.x1, correct.y2 - correct.y1);
-          ctx.setLineDash([]);
         }
       }
     }
@@ -113,38 +99,12 @@ const Practice = () => {
     setDrawnRect(currentRect);
     setCurrentRect(null);
   };
-
-  // Checagem de resposta
-  const checkAnswer = () => {
+      const handleNext = () => {
     if (!drawnRect) {
       alert("Please draw a rectangle first!");
       return;
     }
-    const correct = questions[currentStep].correctArea;
-    const drawn = {
-      x1: drawnRect.x,
-      y1: drawnRect.y,
-      x2: drawnRect.x + drawnRect.width,
-      y2: drawnRect.y + drawnRect.height
-    };
-    console.log(drawn.x1,drawn.y1,drawn.x2,drawn.y2)
-    const overlapX = Math.max(0, Math.min(drawn.x2, correct.x2) - Math.max(drawn.x1, correct.x1));
-    const overlapY = Math.max(0, Math.min(drawn.y2, correct.y2) - Math.max(drawn.y1, correct.y1));
-    const overlapArea = overlapX * overlapY;
-    const drawnArea = drawnRect.width * drawnRect.height;
-    const correctArea = (correct.x2 - correct.x1) * (correct.y2 - correct.y1);
-    const iou = overlapArea / (drawnArea + correctArea - overlapArea);
-    const correct_answer = iou > 0.6;
-    setIsCorrect(correct_answer);
-    setShowFeedback(true);
-    setAnswers([...answers, correct_answer]);
-  };
-
-  // Navegação
-  const handleNext = () => {
-    if (!showFeedback) {
-      checkAnswer();
-    } else {
+    if (window.confirm("Are you sure you want to submit this selection and continue?")) {
       if (currentStep === questions.length - 1) {
         setPracticeFinished(true);
       } else {
@@ -155,17 +115,6 @@ const Practice = () => {
       }
     }
   };
-
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-      setDrawnRect(null);
-      setShowFeedback(false);
-      setIsCorrect(false);
-      setAnswers(answers.slice(0, -1));
-    }
-  };
-
   const handleRestart = () => {
     setCurrentStep(0);
     setDrawnRect(null);
@@ -191,23 +140,14 @@ const Practice = () => {
           <div className="practice-text">
             <h1 className="result-title">
               {passed ? <>Congrats! <span className="highlight">You Passed!</span></> :
-                <>Keep <span className="highlight">Practicing!</span></>}
+                <>Thank you for your contribution!</>}
             </h1>
-            <div className="result-score">
-              <div className="score-circle">
-                <span className="score-percentage">{percentage}%</span>
-                <span className="score-label">Score</span>
-              </div>
-            </div>
-            <p className="result-details">
-              You completed {correctAnswers} out of {questions.length} tasks correctly
-            </p>
             <div className="result-message">
               {passed ? <p>Excellent work! You've mastered the drawing practice! Now you can start the real exploration 🚀</p> :
-                <p>Keep practicing to improve your accuracy. Try again!</p>}
+                <p>You’ve reached the end of the available images. Please check back later for more.</p>}
             </div>
             <div className="practice-nav">
-              {isCorrect ? <Link to="/ExoLearn"><button className="ExoLearn">ExoLearn</button></Link> : <button onClick={handleRestart}>Try Again</button>}
+              <Link to="/"><button className="ExoLearn">Go back</button></Link>
             
             </div>
           </div>
@@ -221,7 +161,7 @@ const Practice = () => {
     <div className="practice-container">
       <section className="practice-content">
         <div className="practice-text">
-          <h1>Question {currentStep + 1} </h1>
+          <h1>Light Curve {currentStep + 1} </h1>
           <p className="instruction">{questions[currentStep].instruction}</p>
           <div className="canvas-wrapper">
             <img
@@ -251,9 +191,8 @@ const Practice = () => {
             </div>
           )}
           <div className="practice-nav">
-            <button onClick={handlePrev} disabled={currentStep === 0}>Previous</button>
             <button onClick={handleNext}>
-              {showFeedback ? (currentStep === questions.length - 1 ? "Finish" : "Next") : "Check Answer"}
+              {showFeedback ? (currentStep === questions.length - 1 ? "Finish" : "Next") : "Send Answer"}
             </button>
           </div>
         </div>
