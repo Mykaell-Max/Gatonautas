@@ -2,7 +2,6 @@
 
 import React from 'react';
 import './Training.css';
-import transitImage from '../../assets/transit-example.jpg'; // substitua com o caminho correto da imagem
 
 const Training: React.FC = () => {
   return (
@@ -31,7 +30,6 @@ const Training: React.FC = () => {
           </div>
         </div>
         <div className="learn-image">
-          <img src={transitImage} alt="Planetary transit illustration" />
         </div>
       </div>
     </div>

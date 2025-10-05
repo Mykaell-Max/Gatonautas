@@ -1,28 +1,29 @@
 import { useState } from "react";
-import AuthCard from "../AuthCard"; 
+import { Link } from "react-router-dom";
+import AuthCard from "../AuthCard";
 import "./Navbar.css";
 
 const Navbar: React.FC = () => {
   const [showAuthCard, setShowAuthCard] = useState(false);
 
   const handleLoginClick = () => setShowAuthCard(true);
+  const handleClose = () => setShowAuthCard(false);
 
   return (
     <>
       <nav className="navbar">
-        <span className="logo">Gatonautas Org.</span>
+        <Link to="/"><span className="logo">Gatonautas Org.</span></Link>
         <ul>
-          <li><a href="#">Home</a></li>
-          <li><a href="#">Learn</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Contact</a></li>
+          <li><Link to="/Learn">Learn</Link></li>
+          <li><Link to="/Explore">Explore</Link></li>
+          <li><Link to="/contact">About</Link></li>
           <li>
-            <button onClick={handleLoginClick}>Log In</button>
+            <button onClick={handleLoginClick}>Login</button>
           </li>
         </ul>
       </nav>
 
-      {showAuthCard && <AuthCard />}
+      {showAuthCard && <AuthCard onClose={handleClose} />}
     </>
   );
 };

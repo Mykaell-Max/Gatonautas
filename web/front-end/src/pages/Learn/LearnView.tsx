@@ -1,6 +1,7 @@
 // src/pages/Learn/LearnView.tsx
 import React from "react";
 import "./Learn.css"; // seu CSS para a página Learn
+import { Link } from "react-router-dom";
 
 const LearnView: React.FC = () => {
   return (
@@ -14,7 +15,9 @@ const LearnView: React.FC = () => {
             </p>
             <p>Empower your curiosity and become part of the next generation of explorers.</p>
             <div className="learn-buttons">
-              <button className="training">Training</button>
+            <Link to="/Training">
+                <button className="training">Training</button>
+            </Link>
             </div>
             <div className="learn-buttons">
             <p>Ready to go? Classify real data and help new discoveries!</p>  
