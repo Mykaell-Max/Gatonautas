@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./Quiz.css";
-import QuizImage from "../../../assets/quiz.svg";
+import QuizImage from "../../assets/Quiz.svg";
 
 type Question = {
   question: string;
