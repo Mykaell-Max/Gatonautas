@@ -6,18 +6,20 @@ export const useUpload = () => {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
 
-  const submitUpload = async (file: File, learningRate: number, epochs: number) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await uploadData(file, learningRate, epochs);
-      setResult(response);
-    } catch (err: any) {
-      setError(err.message || "Upload failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+const submitUpload = async (file: File, model: string | null, hyperParams: any) => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const response = await uploadData(file, model, hyperParams); // PASSANDO TUDO
+    setResult(response);
+  } catch (err: any) {
+    setError(err.message || "Upload failed");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return { submitUpload, loading, error, result };
 };

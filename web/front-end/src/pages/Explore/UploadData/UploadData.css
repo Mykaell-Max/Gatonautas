@@ -29,6 +29,18 @@
   font-weight: bold;
   border-radius: 5px;
 }
+.advanced-toggle:hover {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+  border-color: #ffcc00;
+  box-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+}
 
 .advanced-settings {
   padding: 1rem;
@@ -76,4 +88,40 @@
 
 .reset-btn:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Estilo do seletor de modelos */
+select {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+}
+
+/* Ao passar o mouse */
+select:hover {
+  border-color: #ffcc00;
+  box-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+}
+
+/* Cada opção */
+select option {
+  background-color: #111111;
+  color: white;
+  padding: 0.5rem;
+}
+
+.form-control {
+  background: transparent;
+  color: white;
+  border-color: white;
+}
+
+.form-control:focus {
+  border-color: #ffcc00;
+  box-shadow: 0 0 5px rgba(255,204,0,0.5);
 }
