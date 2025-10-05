@@ -34,8 +34,8 @@ const Quiz2: React.FC = () => {
       <section className="section section-side section-light reverse">
         <div className="section-content quiz-box">
           <h2>Ready to test your knowledge?</h2>
-          <Link to="/quiz">
-            <button className="quiz">Start Quiz</button>
+          <Link to="/Classify">
+            <button className="Classify">Start Quiz</button>
           </Link>
         </div>
 
