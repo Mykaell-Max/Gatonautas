@@ -2,12 +2,23 @@ import { useState } from "react";
 import type { ChangeEvent } from "react";
 import "./UploadData.css";
 import { useUpload } from "../../../hooks/useUpload";
+import { modelsConfig } from "../../../config/modelsConfig";
+
 
 const UploadDataView: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [learningRate, setLearningRate] = useState(0.01);
   const [epochs, setEpochs] = useState(10);
+
+const [selectedModel, setSelectedModel] = useState<keyof typeof modelsConfig | null>(null);
+const [hyperParams, setHyperParams] = useState<any>({});
+
+const handleModelChange = (model: keyof typeof modelsConfig) => {
+  setSelectedModel(model);
+  setHyperParams(modelsConfig[model]); // carrega defaults do modelo
+};
+
 
   const defaultParams = { learningRate: 0.01, epochs: 10 };
   const { submitUpload, loading, error, result } = useUpload();
@@ -36,6 +47,11 @@ const UploadDataView: React.FC = () => {
         stick with the default hyperparameters, carefully optimized by our
         developers for best results, or adjust them yourself in Advanced Mode.
       </p>
+<select onChange={(e) => handleModelChange(e.target.value as keyof typeof modelsConfig)}>
+  {Object.keys(modelsConfig).map((model) => (
+    <option key={model} value={model}>{model}</option>
+  ))}
+</select>
 
       <button
         className="advanced-toggle"
@@ -44,34 +60,24 @@ const UploadDataView: React.FC = () => {
         {showAdvanced ? "Hide Advanced Mode" : "Advanced Mode"}
       </button>
 
-      {showAdvanced && (
-        <div className="advanced-settings">
-          <h3>Adjust Hyperparameters</h3>
-
-          <label>
-            Learning Rate:
-            <input
-              type="number"
-              step="0.001"
-              value={learningRate}
-              onChange={(e) => setLearningRate(Number(e.target.value))}
-            />
-          </label>
-
-          <label>
-            Epochs:
-            <input
-              type="number"
-              value={epochs}
-              onChange={(e) => setEpochs(Number(e.target.value))}
-            />
-          </label>
-
-          <button className="reset-btn" onClick={handleReset}>
-            Reset to Default
-          </button>
-        </div>
-      )}
+{showAdvanced && (
+  <div className="advanced-settings">
+    <h3>{selectedModel} Hyperparameters</h3>
+    {Object.entries(hyperParams).map(([param, value]) => (
+      <label key={param}>
+        {param}:
+        <input
+          type={typeof value === "number" ? "number" : "text"}
+          value={value as any}
+          onChange={(e) => setHyperParams({
+            ...hyperParams,
+            [param]: typeof value === "number" ? Number(e.target.value) : e.target.value
+          })}
+        />
+      </label>
+    ))}
+  </div>
+)}
 
       <div
         className="upload-dropzone"
