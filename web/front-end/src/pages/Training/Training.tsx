@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Training.css';
 import Training1 from '../../assets/Training1.svg';
 import Training2 from '../../assets/Training2.svg';
@@ -65,7 +66,9 @@ const Training: React.FC = () => {
       <section className="section section-side section-light reverse">
         <div className="section-content quiz-box">
           <h2>Ready to test your knowledge?</h2>
-          <button className="quiz">Start Quiz</button>
+          <Link to="/quiz">
+            <button className="quiz">Start Quiz</button>
+          </Link>
         </div>
         <div className="section-image">
           <img src={Training3} alt="Transit graph" />
