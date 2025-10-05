@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import "./Classify.css";
+import { Link } from "react-router-dom";
 
 // Import das imagens
 import img1QST from "./images/img1QST.png";
@@ -15,14 +16,14 @@ type PracticeQuestion = {
 // Array de perguntas
 const questions: PracticeQuestion[] = [
   {
-    instruction: "Draw a rectangle around the yellow circle",
+    instruction: "Draw a rectangle around the transit",
     image: img1QST,
-    correctArea: { x1: 50, y1: 60, x2: 150, y2: 160 },
+    correctArea: { x1: 400.5078125, y1: 40.0859375, x2: 542.5078125, y2: 309.0859375 },
   },
   {
-    instruction: "Mark the green square",
+    instruction: "Draw a rectangle around the transit",
     image: img2QST,
-    correctArea: { x1: 30, y1: 40, x2: 120, y2: 130 },
+    correctArea: { x1: 221.1328125  , y1: 46.5703125  , x2: 277.1328125  , y2: 302.5703125 },
   },
   // continue adicionando todas aqui
 ];
@@ -124,15 +125,14 @@ const Practice = () => {
       x2: drawnRect.x + drawnRect.width,
       y2: drawnRect.y + drawnRect.height
     };
-
+    console.log(drawn.x1,drawn.y1,drawn.x2,drawn.y2)
     const overlapX = Math.max(0, Math.min(drawn.x2, correct.x2) - Math.max(drawn.x1, correct.x1));
     const overlapY = Math.max(0, Math.min(drawn.y2, correct.y2) - Math.max(drawn.y1, correct.y1));
     const overlapArea = overlapX * overlapY;
     const drawnArea = drawnRect.width * drawnRect.height;
     const correctArea = (correct.x2 - correct.x1) * (correct.y2 - correct.y1);
     const iou = overlapArea / (drawnArea + correctArea - overlapArea);
-
-    const correct_answer = iou > 0.5;
+    const correct_answer = iou > 0.6;
     setIsCorrect(correct_answer);
     setShowFeedback(true);
     setAnswers([...answers, correct_answer]);
@@ -201,11 +201,11 @@ const Practice = () => {
               You completed {correctAnswers} out of {questions.length} tasks correctly
             </p>
             <div className="result-message">
-              {passed ? <p>Excellent work! You've mastered the drawing practice!</p> :
+              {passed ? <p>Excellent work! You've mastered the drawing practice! Now you can start the real exploration 🚀</p> :
                 <p>Keep practicing to improve your accuracy. Try again!</p>}
             </div>
             <div className="practice-nav">
-              <button onClick={handleRestart}>Try Again</button>
+              {isCorrect ? <Link to="/Explore"><button className="explore">Explore</button></Link> : <button onClick={handleRestart}>Try Again</button>}
             </div>
           </div>
         </section>
