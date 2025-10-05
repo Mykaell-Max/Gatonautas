@@ -3,6 +3,7 @@ import Home from "./pages/Home/Home";
 import Learn from "./pages/Learn/Learn";
 import Training from "./pages/Learn/Training/Training"
 import Explore from "./pages/Explore/Explore";
+import About from "./pages/About/About";
 
 export const AppRoutes = () =>{
     return(
@@ -11,6 +12,7 @@ export const AppRoutes = () =>{
                 <Route path="/Learn" element={<Learn />} />
                 <Route path="/Training" element={<Training />} />
                 <Route path="/Explore" element={<Explore/>} />
+                <Route path="/About" element={<About/>} />
 
             </Routes>
     )

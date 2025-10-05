@@ -16,7 +16,7 @@ const Navbar: React.FC = () => {
         <ul>
           <li><Link to="/Learn">Learn</Link></li>
           <li><Link to="/Explore">Explore</Link></li>
-          <li><Link to="/contact">About</Link></li>
+          <li><Link to="/About">About</Link></li>
           <li>
             <button onClick={handleLoginClick}>Login</button>
           </li>
