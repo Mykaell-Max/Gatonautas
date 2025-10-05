@@ -4,7 +4,7 @@
   overflow-y: auto;
   height: 100vh;
   scroll-behavior: smooth;
-  background: #000;
+  background: #000!important;
 }
 
 /* Título isolado com fundo preto, alinhado à esquerda */
