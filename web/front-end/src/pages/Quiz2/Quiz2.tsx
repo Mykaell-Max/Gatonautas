@@ -33,7 +33,7 @@ const Quiz2: React.FC = () => {
       {/* Seção 4 – imagem à direita, texto à esquerda em caixa cinza */}
       <section className="section section-side section-light reverse">
         <div className="section-content Classify-box">
-          <h2>This is your practice area — try detecting planetary transits yourself!</h2>
+          <h2>Your practice area — try detecting planetary transits yourself!</h2>
           <Link to="/Classify">
             <button className="Classify">GO!</button>
           </Link>

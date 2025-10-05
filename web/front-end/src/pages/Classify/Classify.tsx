@@ -218,7 +218,7 @@ const Practice = () => {
     <div className="practice-container">
       <section className="practice-content">
         <div className="practice-text">
-          <h1>Step {currentStep + 1}: <span className="highlight">Practice</span></h1>
+          <h1>Question {currentStep + 1} </h1>
           <p className="instruction">{questions[currentStep].instruction}</p>
           <div className="canvas-wrapper">
             <img
