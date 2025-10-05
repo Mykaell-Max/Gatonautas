@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Quiz2.css';
-import Classify1 from '../../assets/Classify1.svg';
 import Training3 from '../../assets/Training3.svg';
 
 const Quiz2: React.FC = () => {
@@ -10,7 +9,7 @@ const Quiz2: React.FC = () => {
       {/* Título isolado com fundo preto, alinhado à esquerda */}
       <section className="section section-title">
         <div className="title-wrapper">
-          <h1>Classify</h1>
+          <h1>Training</h1>
         </div>
       </section>
 

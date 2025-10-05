@@ -205,7 +205,7 @@ const Practice = () => {
                 <p>Keep practicing to improve your accuracy. Try again!</p>}
             </div>
             <div className="practice-nav">
-              {isCorrect ? <Link to="/Explore"><button className="explore">Explore</button></Link> : <button onClick={handleRestart}>Try Again</button>}
+              {isCorrect ? <Link to="/Classify"><button className="Classify">Classify</button></Link> : <button onClick={handleRestart}>Try Again</button>}
             </div>
           </div>
         </section>
