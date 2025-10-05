@@ -181,8 +181,8 @@ const Quiz = () => {
                 Try Again
               </button>
               {passed && (
-                <Link to="/Explore">
-                    <button className="Explore">Start Explore</button>
+                <Link to="/Quiz2">
+                    <button className="Explore">Next Level!</button>
                 </Link>
               )}
             </div>

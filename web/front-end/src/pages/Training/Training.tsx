@@ -52,7 +52,7 @@ const Training: React.FC = () => {
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-          ></iframe>
+           style={{ border: '2px solid #fff' }}></iframe>
         </div>
       </section>
 
@@ -68,7 +68,7 @@ const Training: React.FC = () => {
           </p>
         </div>
         <div className="section-image">
-          <img src={Training2} alt="Star field with transit" />
+          <img src={Training2} alt="Star field with transit"  style={{ border: '2px solid #fff' }}/>
         </div>
       </section>
 
@@ -91,13 +91,13 @@ const Training: React.FC = () => {
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-          ></iframe>
+           style={{ border: '2px solid #fff' }}></iframe>
         </div>
       </section>
 
       {/* Seção 5 – Centralizada */}
       <section className="section section-final">
-        <div className="quiz-box">
+        <div className="quiz-box" style={{ border: '2px solid #fff' }}>
           <h2>Ready to test your knowledge?</h2>
           <Link to="/quiz">
             <button className="quiz">Start Quiz</button>
