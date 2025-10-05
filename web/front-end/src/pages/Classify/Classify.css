@@ -34,6 +34,7 @@ html, body {
   font-size: clamp(2rem, 4vw, 5rem);
   font-weight: 700;
   margin-bottom: 1rem;
+  color: #ffcc00;
 }
 
 .highlight {
