@@ -16,7 +16,9 @@ const HomeView = () => {
             Explore new worlds. Learn how to bring Space Science to Earth.
           </p>
           <div className="hero-buttons">
+            <Link to="/Explore">
             <button className="explore">Explore</button>
+            </Link>
             <Link to="/Learn">
               <button className="learn">Learn</button>
             </Link>
