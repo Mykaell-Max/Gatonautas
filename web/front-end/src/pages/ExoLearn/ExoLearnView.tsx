@@ -17,7 +17,7 @@ const ExoLearn = () => {
           </p>
           <div  className="hero-buttons" >
             <Link to="/Explore">
-            <button className="explore" >Start!!</button>
+            <button  className="explore" >Start!!</button>
             </Link>
           </div>
         </div>
