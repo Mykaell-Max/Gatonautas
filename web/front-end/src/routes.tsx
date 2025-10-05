@@ -5,7 +5,7 @@ import Training from "./pages/Training/Training"
 import Explore from "./pages/Explore/Explore";
 import About from "./pages/About/About";
 import UploadData from "./pages/Explore/UploadData/UploadData";
-import Quiz from "./pages/Quiz/quiz"
+import Quiz from "./pages/Quiz/quiz";
 
 export const AppRoutes = () =>{
     return(
