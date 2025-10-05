@@ -6,6 +6,7 @@ import Explore from "./pages/Explore/Explore";
 import About from "./pages/About/About";
 import UploadData from "./pages/Explore/UploadData/UploadData";
 import Quiz from "./pages/Quiz/quiz";
+import Classify from "./pages/Classify/Classify"
 
 export const AppRoutes = () =>{
     return(
@@ -17,6 +18,7 @@ export const AppRoutes = () =>{
                 <Route path="/About" element={<About/>} />
                 <Route path="/UploadData" element={<UploadData/>} />
                 <Route path="/Quiz" element={<Quiz />} />
+                <Route path="/Classify" element={<Classify/>}
 
             </Routes>
     )
