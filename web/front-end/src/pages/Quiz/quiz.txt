@@ -6,7 +6,7 @@ A planet outside the Solar System|correct
 
 What is a planetary transit?
 When a planet moves from one galaxy to another.
-When a planet passes in front of its star, causing a small dip in the star’s brightness 
+When a planet passes in front of its star, causing a small dip in the star’s brightness|correct 
 When two planets align perfectly in their orbits.
 When a planet completes one full orbit around its star.
 
