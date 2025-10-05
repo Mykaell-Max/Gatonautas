@@ -58,6 +58,7 @@
   gap: 1rem;
   flex-wrap: wrap;
   margin-top: 1rem;
+   margin-bottom: 2rem; /* adiciona espaço embaixo */
 }
 
 .learn-buttons button {
