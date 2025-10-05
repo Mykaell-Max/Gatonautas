@@ -22,7 +22,7 @@ Our system automatically processes your input, retrains the AI, and updates perf
 helping you uncover potential exoplanet signals in minutes. You can also adjust hyperparameters directly from the interface to see how these changes impact your model’s results.
           </p>
           <div className="learn-buttons">
-            <Link to="/Upload">
+            <Link to="/UploadData">
               <button className="training">Upload Data & Adjust Parameters</button>
             </Link>
           </div>

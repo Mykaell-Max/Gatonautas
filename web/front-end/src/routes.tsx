@@ -4,6 +4,7 @@ import Learn from "./pages/Learn/Learn";
 import Training from "./pages/Learn/Training/Training"
 import Explore from "./pages/Explore/Explore";
 import About from "./pages/About/About";
+import UploadData from "./pages/Explore/UploadData/UploadData";
 
 export const AppRoutes = () =>{
     return(
@@ -13,6 +14,7 @@ export const AppRoutes = () =>{
                 <Route path="/Training" element={<Training />} />
                 <Route path="/Explore" element={<Explore/>} />
                 <Route path="/About" element={<About/>} />
+                <Route path="/UploadData" element={<UploadData/>} />
 
             </Routes>
     )
