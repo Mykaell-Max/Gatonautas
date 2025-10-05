@@ -1,0 +1,215 @@
+/* Container principal com gradiente vertical invertido (claro → escuro) */
+.training-container {
+  font-family: Arial, Helvetica, sans-serif;
+  overflow-y: auto;
+  height: 100vh;
+  scroll-behavior: smooth;
+  background: linear-gradient(to bottom, #eeeeee 0%, #b3940a 10%, #222222 50%, #000000 100%)!important;
+}
+
+/* Título isolado com fundo preto, alinhado à esquerda */
+.section-title {
+  background-color: #000;
+  margin-top: 2%;
+  padding: 2rem;
+}
+
+.title-wrapper h1 {
+  color: white;
+  font-size: 3rem;
+  margin: 0;
+  text-align: left;
+}
+
+/* Seção com imagem de fundo e texto sobreposto à direita */
+.section-hero {
+  background-position: center;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start; /* alinha no topo */
+  justify-content: flex-end;
+  padding: 2rem;
+}
+
+.hero-overlay {
+  padding: 2rem;
+  border-radius: 10px;
+  margin-right: 50%;
+  margin-top: 2rem;
+}
+
+.hero-text h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.hero-text p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: #f0f0f0;
+}
+
+/* Seções com fundo transparente herdando gradiente */
+.section-light {
+  background-color: transparent;
+  padding: 4rem 2rem;
+}
+
+/* Layout lateral */
+.section-side {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.section-side.reverse {
+  flex-direction: row-reverse;
+}
+
+/* Conteúdo */
+.section-content {
+  flex: 1;
+  max-width: 600px;
+}
+
+.section-content h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #f0f0f0;
+}
+
+.section-content p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: #ddd;
+}
+
+/* Imagens laterais */
+.section-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  border:#fff;
+}
+
+.section-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+/* Caixa cinza da última seção */
+.quiz-box {
+  background-color: rgba(240, 240, 240, 0.9);
+  padding: 2rem;
+  border-radius: 10px;
+  
+}
+
+.quiz-box h2 {
+  color: #111;
+}
+
+.quiz-box p {
+  color: #333;
+}
+
+/* Botão do quiz */
+.quiz {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: none;
+  background: black;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  }
+
+.quiz:hover {
+  background: #333;
+}
+
+/* Container do vídeo */
+.section-video {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/* Deixa responsivo no formato 16:9 */
+.section-video iframe {
+  width: 70%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+}
+
+.section-content2 {
+  flex: 1;
+  max-width: 100%;
+  display: inline-block; /* permite que a largura do fundo siga o texto */
+}
+
+.section-content2 h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #f0f0f0;
+   display: inline-block; /* permite que a largura do fundo siga o texto */
+}
+
+.section-content2 p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: #ddd;
+}
+
+/* Ajusta a imagem para ter a largura do título dentro da mesma seção */
+.section-content2 .section-image {
+  width: 100%; /* pega toda a largura da div pai (.section-content2) */
+   display: inline-block; /* permite que a largura do fundo siga o texto */
+  justify-content: flex-start; /* alinha à esquerda, mesma posição do h2 */
+  
+}
+
+.section-content2 .section-image img {
+  width: 60%; /* ocupa toda a largura da div .section-image */
+  max-width: none; /* remove limite anterior */
+  height: auto;
+  border-radius: 10px;
+}
+.section-final {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: #fff;
+  text-align: center;
+  }
+
+.section-final .quiz-box h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-final .quiz {
+  background-color: #fff;
+  color: #000;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.section-final .quiz:hover {
+  background-color: #444;
+  color: #fff;
+  transform: scale(1.05);
+}

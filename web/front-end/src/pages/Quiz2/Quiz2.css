@@ -4,13 +4,13 @@
   overflow-y: auto;
   height: 100vh;
   scroll-behavior: smooth;
-  background: linear-gradient(to bottom, #eeeeee 0%, #b3940a 10%, #222222 50%, #000000 100%);
+  background: #000!important;
 }
 
 /* Título isolado com fundo preto, alinhado à esquerda */
 .section-title {
   background-color: #000;
-  margin-top: 5%;
+  margin-top: 2%;
   padding: 2rem;
 }
 
@@ -102,22 +102,22 @@
 }
 
 /* Caixa cinza da última seção */
-.quiz-box {
-  background-color: rgba(240, 240, 240, 0.9);
+.Classify-box {
+  background-color: rgb(168 125 12 / 90%);
   padding: 2rem;
   border-radius: 10px;
 }
 
-.quiz-box h2 {
+.Classify-box h2 {
   color: #111;
 }
 
-.quiz-box p {
+.Classify-box p {
   color: #333;
 }
 
 /* Botão do quiz */
-.quiz {
+.Classify {
   padding: 0.8rem 1.5rem;
   font-size: 1rem;
   border-radius: 5px;
@@ -127,8 +127,59 @@
   font-weight: bold;
   cursor: pointer;
   transition: background 0.3s ease;
+  justify-content: center; /* centraliza verticalmente */
+  text-align: center; 
 }
 
-.quiz:hover {
+.Classify:hover {
   background: #333;
+}
+
+/* Container do vídeo */
+.section-video {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/* Deixa responsivo no formato 16:9 */
+.section-video iframe {
+  width: 70%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+}
+
+.section-content2 {
+  flex: 1;
+  max-width: 100%;
+  display: inline-block; /* permite que a largura do fundo siga o texto */
+}
+
+.section-content2 h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #f0f0f0;
+   display: inline-block; /* permite que a largura do fundo siga o texto */
+}
+
+.section-content2 p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: #ddd;
+}
+
+/* Ajusta a imagem para ter a largura do título dentro da mesma seção */
+.section-content2 .section-image {
+  width: 100%; /* pega toda a largura da div pai (.section-content2) */
+   display: inline-block; /* permite que a largura do fundo siga o texto */
+  justify-content: flex-start; /* alinha à esquerda, mesma posição do h2 */
+  
+}
+
+.section-content2 .section-image img {
+  width: 60%; /* ocupa toda a largura da div .section-image */
+  max-width: none; /* remove limite anterior */
+  height: auto;
+  border-radius: 10px;
 }

@@ -39,7 +39,9 @@ const LearnView: React.FC = () => {
             <div className="learn-right">
                 <p>Ready to go? Classify real data and help new discoveries!</p>
                 <div className="learn-buttons">
-                <button className="classify">Classify</button>
+                <Link to="/Quiz2">
+                  <button className="Quiz2">Classify</button>
+                </Link>
               </div>
             </div>
           

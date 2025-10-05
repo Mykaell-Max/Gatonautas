@@ -1,8 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Training.css';
-import Training1 from '../../../assets/Training1.svg';
-import Training2 from '../../../assets/Training2.svg';
-import Training3 from '../../../assets/Training3.svg';
+import Training1 from '../../assets/Training1.svg';
+import Training2 from '../../assets/Training2.svg';
+import Training3 from '../../assets/Training3.svg';
 
 const Training: React.FC = () => {
   return (
@@ -29,8 +30,8 @@ const Training: React.FC = () => {
         </div>
       </section>
 
-      {/* Seção 2 – fundo branco com texto explicativo */}
-      <section className="section section-light">
+      {/* Seção 2 – fundo branco com texto explicativo + vídeo */}
+      <section className="section section-side section-light">
         <div className="section-content">
           <h2>How are exoplanets discovered?</h2>
           <p>
@@ -42,6 +43,16 @@ const Training: React.FC = () => {
           <p>
             The transit method is one of the most successful techniques for discovering exoplanets and is used by missions such as NASA’s Kepler and TESS.
           </p>
+        </div>
+
+        <div className="section-video">
+          <iframe
+            src="https://www.youtube.com/embed/xNeRqbw18Jk?autoplay=1&loop=1&playlist=xNeRqbw18Jk"
+            title="Star field with transit"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+           style={{ border: '2px solid #fff' }}></iframe>
         </div>
       </section>
 
@@ -57,18 +68,40 @@ const Training: React.FC = () => {
           </p>
         </div>
         <div className="section-image">
-          <img src={Training2} alt="Star field with transit" />
+          <img src={Training2} alt="Star field with transit"  style={{ border: '2px solid #fff' }}/>
         </div>
       </section>
 
-      {/* Seção 4 – imagem à direita, texto à esquerda em caixa cinza */}
-      <section className="section section-side section-light reverse">
-        <div className="section-content quiz-box">
-          <h2>Ready to test your knowledge?</h2>
-          <button className="quiz">Start Quiz</button>
+      {/* Seção 4 – Habitable Zone com vídeo */}
+      <section className="section section-side section-light">
+        <div className="section-content">
+          <h2>Habitable Zone</h2>
+          <p>
+            One of the main requirements for the existence of life as we know is liquid water.
+            The habitable zone is the range of distances from a star where liquid water could exist
+            on the surface of an exoplanet. The temperature conditions there might be just right:
+            not too hot and not too cold.
+          </p>
         </div>
-        <div className="section-image">
-          <img src={Training3} alt="Transit graph" />
+
+        <div className="section-video">
+          <iframe
+            src="https://upload.wikimedia.org/wikipedia/commons/transcoded/0/0e/Habitable_Zones_Compared_to_the_Size_of_the_Hosting_Star.webm/Habitable_Zones_Compared_to_the_Size_of_the_Hosting_Star.webm.720p.vp9.webm"
+            title="Habitable Zones Compared to the Size of the Hosting Star"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+           style={{ border: '2px solid #fff' }}></iframe>
+        </div>
+      </section>
+
+      {/* Seção 5 – Centralizada */}
+      <section className="section section-final">
+        <div className="quiz-box" style={{ border: '2px solid #fff' }}>
+          <h2>Ready to test your knowledge?</h2>
+          <Link to="/quiz">
+            <button className="quiz">Start Quiz</button>
+          </Link>
         </div>
       </section>
     </div>

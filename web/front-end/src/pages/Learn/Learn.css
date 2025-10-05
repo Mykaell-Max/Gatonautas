@@ -58,15 +58,17 @@
   gap: 1rem;
   flex-wrap: wrap;
   margin-top: 1rem;
+  
 }
 
 .learn-buttons button {
   padding: 0.8rem 1.5rem;
   font-size: 1rem;
   border-radius: 5px;
-  border: none;
   cursor: pointer;
   transition: background 0.3s ease;
+  font-weight: bold!important;
+  
 }
 
 .training {
@@ -86,8 +88,8 @@
 }
 
 .classify:hover {
-  background: white;
   color: black;
+  background: #ffcc00;
 }
 
 .training:hover {
