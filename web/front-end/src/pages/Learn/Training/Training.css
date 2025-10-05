@@ -1,81 +1,134 @@
-/* src/pages/Training/Training.css */
-
-.learn-container {
-  background: radial-gradient(circle at center, #1a0040, #000000 70%);
-  color: white;
-  min-height: 100vh;
-  padding: 2rem;
+/* Container principal com gradiente vertical invertido (claro → escuro) */
+.training-container {
   font-family: Arial, Helvetica, sans-serif;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  overflow-y: auto;
+  height: 100vh;
+  scroll-behavior: smooth;
+  background: linear-gradient(to bottom, #eeeeee 0%, #b3940a 10%, #222222 50%, #000000 100%);
 }
 
-.learn-hero {
+/* Título isolado com fundo preto, alinhado à esquerda */
+.section-title {
+  background-color: #000;
+  margin-top: 5%;
+  padding: 2rem;
+}
+
+.title-wrapper h1 {
+  color: white;
+  font-size: 3rem;
+  margin: 0;
+  text-align: left;
+}
+
+/* Seção com imagem de fundo e texto sobreposto à direita */
+.section-hero {
+  background-position: center;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start; /* alinha no topo */
+  justify-content: flex-end;
+  padding: 2rem;
+}
+
+.hero-overlay {
+  padding: 2rem;
+  border-radius: 10px;
+  margin-right: 50%;
+  margin-top: 2rem;
+}
+
+.hero-text h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.hero-text p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: #f0f0f0;
+}
+
+/* Seções com fundo transparente herdando gradiente */
+.section-light {
+  background-color: transparent;
+  padding: 4rem 2rem;
+}
+
+/* Layout lateral */
+.section-side {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 5rem;
-  padding: 0 2rem;
-  flex-wrap: wrap;
+  gap: 2rem;
 }
 
-.learn-text {
+.section-side.reverse {
+  flex-direction: row-reverse;
+}
+
+/* Conteúdo */
+.section-content {
+  flex: 1;
   max-width: 600px;
 }
 
-.learn-text h1 {
-  font-size: 3rem;
-  font-weight: bold;
+.section-content h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #f0f0f0;
 }
 
-.learn-text p {
-  margin-top: 1rem;
+.section-content p {
   font-size: 1.2rem;
   line-height: 1.6;
+  margin-bottom: 1rem;
+  color: #ddd;
 }
 
-.learn-buttons {
-  margin-top: 2rem;
-  margin-bottom: 5rem;
+/* Imagens laterais */
+.section-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
-.learn-buttons button {
+.section-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+/* Caixa cinza da última seção */
+.quiz-box {
+  background-color: rgba(240, 240, 240, 0.9);
+  padding: 2rem;
+  border-radius: 10px;
+}
+
+.quiz-box h2 {
+  color: #111;
+}
+
+.quiz-box p {
+  color: #333;
+}
+
+/* Botão do quiz */
+.quiz {
   padding: 0.8rem 1.5rem;
-  margin-right: 1rem;
-  border: none;
-  cursor: pointer;
   font-size: 1rem;
   border-radius: 5px;
+  border: none;
+  background: black;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
   transition: background 0.3s ease;
 }
 
-.learn-buttons .training {
-  background: white;
-  color: black;
-  font-weight: bold;
-}
-
-.learn-buttons .classify {
-  background: transparent;
-  border: 1px solid white;
-  color: white;
-}
-
-.learn-buttons .classify:hover {
-  background: white;
-  color: black;
-}
-
-.learn-image {
-  max-width: 500px;
-  margin-top: 2rem;
-}
-
-.learn-image img {
-  width: 100%;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+.quiz:hover {
+  background: #333;
 }

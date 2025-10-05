@@ -1,37 +1,76 @@
-// src/pages/Training/Training.tsx
-
 import React from 'react';
 import './Training.css';
+import Training1 from '../../../assets/Training1.svg';
+import Training2 from '../../../assets/Training2.svg';
+import Training3 from '../../../assets/Training3.svg';
 
 const Training: React.FC = () => {
   return (
-    <div className="learn-container">
-      <div className="learn-hero">
-        <div className="learn-text">
+    <div className="training-container">
+      {/* Título isolado com fundo preto, alinhado à esquerda */}
+      <section className="section section-title">
+        <div className="title-wrapper">
           <h1>Training</h1>
-          <p>
-            <strong>What are Exoplanets?</strong><br /><br />
-            An exoplanet is any planet beyond our solar system. They can orbit other stars, besides the sun, pulsars or even float free (rogue planets) untethered to any star.
-            <br /><br />
-          </p>
-          <p>
-            <strong>How do we discover exoplanets?</strong><br /><br />
-            A planetary transit happens when a planet passes directly in front of its star, from a point of view, blocking a tiny portion of the star’s light for a short time. Imagine watching a bright light bulb and a small toy moving in front of it for a moment—the bulb looks slightly dimmer. That’s exactly what astronomers detect when an exoplanet transits its star.
-            <br /><br />
-            During a transit, the brightness of the star dips slightly, and by measuring this dip, scientists can learn a lot about the planet such as its size, orbital period, and even whether it has an atmosphere or the star’s influence filtering through it.
-            <br /><br />
-            This method is incredibly powerful because it’s sensitive and efficient. Space telescopes like Kepler and TESS monitor thousands of stars at once, looking for these tiny, regular dips in brightness. As a result, most of the exoplanets we know today have been discovered through the transit method.
-          </p>
-          <p>
-            <strong>This is what a Planetary Transit looks like:</strong>
-          </p>
-          <div className="learn-buttons">
-            <button className="quiz">Start Quiz</button>
+        </div>
+      </section>
+
+      {/* Seção 1 – imagem como fundo, texto sobreposto à direita */}
+      <section
+        className="section section-hero"
+        style={{ backgroundImage: `url(${Training1})` }}
+      >
+        <div className="hero-overlay">
+          <div className="hero-text">
+            <h2>What are Exoplanets?</h2>
+            <p>
+              An exoplanet is any planet beyond our solar system. Most orbit other stars, but free-floating exoplanets, called rogue planets, orbit the galactic center and are untethered to any star.
+            </p>
           </div>
         </div>
-        <div className="learn-image">
+      </section>
+
+      {/* Seção 2 – fundo branco com texto explicativo */}
+      <section className="section section-light">
+        <div className="section-content">
+          <h2>How are exoplanets discovered?</h2>
+          <p>
+            A planetary transit occurs when a planet passes directly in front of its star, as viewed by an observer. During a transit, the planet blocks a small portion of the star’s light, causing a temporary and periodic dimming.
+          </p>
+          <p>
+            This dimming can be detected by sensitive instruments and used to infer the presence of a planet. The amount of dimming and the duration of the transit can provide information about the planet’s size and orbit.
+          </p>
+          <p>
+            The transit method is one of the most successful techniques for discovering exoplanets and is used by missions such as NASA’s Kepler and TESS.
+          </p>
         </div>
-      </div>
+      </section>
+
+      {/* Seção 3 – fundo branco com imagem lateral */}
+      <section className="section section-side section-light">
+        <div className="section-content">
+          <h2>Why are exoplanets studied?</h2>
+          <p>
+            Studying exoplanets helps us understand the formation, evolution, and diversity of planetary systems. It can also provide insights into the potential habitability of other worlds and the possibility of life beyond Earth.
+          </p>
+          <p>
+            By analyzing the atmospheres, compositions, and orbits of exoplanets, scientists can learn about the conditions that lead to planet formation and the factors that influence planetary environments.
+          </p>
+        </div>
+        <div className="section-image">
+          <img src={Training2} alt="Star field with transit" />
+        </div>
+      </section>
+
+      {/* Seção 4 – imagem à direita, texto à esquerda em caixa cinza */}
+      <section className="section section-side section-light reverse">
+        <div className="section-content quiz-box">
+          <h2>Ready to test your knowledge?</h2>
+          <button className="quiz">Start Quiz</button>
+        </div>
+        <div className="section-image">
+          <img src={Training3} alt="Transit graph" />
+        </div>
+      </section>
     </div>
   );
 };
