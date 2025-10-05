@@ -13,7 +13,7 @@ export const modelsConfig = {
     tol: 0.0001,
     validation_fraction: 0.2,
   },
-  LightGBM: {
+  "LightGBM": {
     random_state: 42,
     n_estimators: 100,
     learning_rate: 0.1,
@@ -24,7 +24,6 @@ export const modelsConfig = {
     colsample_bytree: 0.3,
     reg_alpha: 0.0,
     reg_lambda: 0.5,
-    class_weight: null,
     metric: ["auc", "average_precision", "binary_logloss"],
     boosting_type: ["gbdt", "dart", "goss"],
   },

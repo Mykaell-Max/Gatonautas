@@ -8,8 +8,6 @@ import { modelsConfig } from "../../../config/modelsConfig";
 const UploadDataView: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [learningRate, setLearningRate] = useState(0.01);
-  const [epochs, setEpochs] = useState(10);
 
 const [selectedModel, setSelectedModel] = useState<keyof typeof modelsConfig | null>(null);
 const [hyperParams, setHyperParams] = useState<any>({});
@@ -20,7 +18,6 @@ const handleModelChange = (model: keyof typeof modelsConfig) => {
 };
 
 
-  const defaultParams = { learningRate: 0.01, epochs: 10 };
   const { submitUpload, loading, error, result } = useUpload();
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -29,15 +26,11 @@ const handleModelChange = (model: keyof typeof modelsConfig) => {
     }
   };
 
-  const handleReset = () => {
-    setLearningRate(defaultParams.learningRate);
-    setEpochs(defaultParams.epochs);
-  };
-
-  const handleSubmit = () => {
+const handleSubmit = () => {
   if (!file) return;
-  submitUpload(file, learningRate, epochs);
+  submitUpload(file, selectedModel, hyperParams);
 };
+
 
   return (
     <div className="upload-container">
@@ -48,6 +41,7 @@ const handleModelChange = (model: keyof typeof modelsConfig) => {
         developers for best results, or adjust them yourself in Advanced Mode.
       </p>
 <select onChange={(e) => handleModelChange(e.target.value as keyof typeof modelsConfig)}>
+  <option value=""> Select a model </option>
   {Object.keys(modelsConfig).map((model) => (
     <option key={model} value={model}>{model}</option>
   ))}
@@ -60,22 +54,54 @@ const handleModelChange = (model: keyof typeof modelsConfig) => {
         {showAdvanced ? "Hide Advanced Mode" : "Advanced Mode"}
       </button>
 
-{showAdvanced && (
+{showAdvanced && selectedModel && (
   <div className="advanced-settings">
     <h3>{selectedModel} Hyperparameters</h3>
-    {Object.entries(hyperParams).map(([param, value]) => (
+{Object.entries(hyperParams).map(([param, value]) => {
+  // Se o valor for um array de strings -> renderiza como dropdown
+  if (Array.isArray(value) && value.every((v) => typeof v === "string")) {
+    return (
       <label key={param}>
         {param}:
-        <input
-          type={typeof value === "number" ? "number" : "text"}
-          value={value as any}
-          onChange={(e) => setHyperParams({
-            ...hyperParams,
-            [param]: typeof value === "number" ? Number(e.target.value) : e.target.value
-          })}
-        />
+        <select
+          value={hyperParams[param]}
+          onChange={(e) =>
+            setHyperParams({
+              ...hyperParams,
+              [param]: e.target.value,
+            })
+          }
+        >
+          {value.map((option: string) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
       </label>
-    ))}
+    );
+  }
+
+  // Caso contrário: number ou texto
+  return (
+    <label key={param}>
+      {param}:
+      <input
+        type={typeof value === "number" ? "number" : "text"}
+        value={value as any}
+        onChange={(e) =>
+          setHyperParams({
+            ...hyperParams,
+            [param]:
+              typeof value === "number"
+                ? Number(e.target.value)
+                : e.target.value,
+          })
+        }
+      />
+    </label>
+  );
+})}
   </div>
 )}
 
