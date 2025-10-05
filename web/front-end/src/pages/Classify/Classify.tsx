@@ -1,19 +1,33 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import "./Classify.css";
+
+// Import das imagens
+import img1QST from "./images/img1QST.png";
+import img2QST from "./images/img2QST.png";
+// Adicione mais imagens aqui conforme necessário
 
 type PracticeQuestion = {
   instruction: string;
-  imagePath: string;
-  correctArea: {
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
-  };
+  image: string;
+  correctArea: { x1: number; y1: number; x2: number; y2: number };
 };
 
+// Array de perguntas
+const questions: PracticeQuestion[] = [
+  {
+    instruction: "Draw a rectangle around the yellow circle",
+    image: img1QST,
+    correctArea: { x1: 50, y1: 60, x2: 150, y2: 160 },
+  },
+  {
+    instruction: "Mark the green square",
+    image: img2QST,
+    correctArea: { x1: 30, y1: 40, x2: 120, y2: 130 },
+  },
+  // continue adicionando todas aqui
+];
+
 const Practice = () => {
-  const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
@@ -23,46 +37,11 @@ const Practice = () => {
   const [isCorrect, setIsCorrect] = useState(false);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [practiceFinished, setPracticeFinished] = useState(false);
-  
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  useEffect(() => {
-    import('./practice.txt?raw')
-      .then((module) => {
-        const text = module.default;
-        
-        const lines = text
-          .split("\n")
-          .map(line => line.trim())
-          .filter(line => line !== "");
-        
-        const parsed: PracticeQuestion[] = [];
-
-        for (let i = 0; i < lines.length; i += 3) {
-          if (i + 2 < lines.length) {
-            const coords = lines[i + 2].split(",").map(Number);
-            
-            parsed.push({
-              instruction: lines[i],
-              imagePath: lines[i + 1],
-              correctArea: {
-                x1: coords[0],
-                y1: coords[1],
-                x2: coords[2],
-                y2: coords[3]
-              }
-            });
-          }
-        }
-
-        setQuestions(parsed);
-      })
-      .catch((error) => {
-        console.error("Erro ao carregar practice.txt:", error);
-      });
-  }, []);
-
+  // Desenho no canvas
   useEffect(() => {
     if (canvasRef.current && imageRef.current) {
       const canvas = canvasRef.current;
@@ -74,45 +53,39 @@ const Practice = () => {
         canvas.height = img.height;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Desenha o retângulo sendo desenhado
+        // Retângulo sendo desenhado
         if (currentRect) {
           ctx.strokeStyle = "#ffcc00";
           ctx.lineWidth = 3;
           ctx.strokeRect(currentRect.x, currentRect.y, currentRect.width, currentRect.height);
         }
 
-        // Desenha o retângulo final
+        // Retângulo final
         if (drawnRect) {
           ctx.strokeStyle = showFeedback ? (isCorrect ? "#22c55e" : "#ef4444") : "#ffcc00";
           ctx.lineWidth = 3;
           ctx.strokeRect(drawnRect.x, drawnRect.y, drawnRect.width, drawnRect.height);
         }
 
-        // Mostra o retângulo correto se errou
-        if (showFeedback && !isCorrect && questions[currentStep]) {
+        // Retângulo correto se errou
+        if (showFeedback && !isCorrect) {
           ctx.strokeStyle = "#22c55e";
           ctx.lineWidth = 3;
           ctx.setLineDash([5, 5]);
           const correct = questions[currentStep].correctArea;
-          ctx.strokeRect(
-            correct.x1,
-            correct.y1,
-            correct.x2 - correct.x1,
-            correct.y2 - correct.y1
-          );
+          ctx.strokeRect(correct.x1, correct.y1, correct.x2 - correct.x1, correct.y2 - correct.y1);
           ctx.setLineDash([]);
         }
       }
     }
-  }, [currentRect, drawnRect, showFeedback, isCorrect, currentStep, questions]);
+  }, [currentRect, drawnRect, showFeedback, isCorrect, currentStep]);
 
+  // Eventos do mouse
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (showFeedback || !canvasRef.current) return;
-
     const rect = canvasRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
     setIsDrawing(true);
     setStartPoint({ x, y });
     setDrawnRect(null);
@@ -120,11 +93,9 @@ const Practice = () => {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !startPoint || !canvasRef.current) return;
-
     const rect = canvasRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
     setCurrentRect({
       x: Math.min(startPoint.x, x),
       y: Math.min(startPoint.y, y),
@@ -135,18 +106,17 @@ const Practice = () => {
 
   const handleMouseUp = () => {
     if (!isDrawing || !currentRect) return;
-
     setIsDrawing(false);
     setDrawnRect(currentRect);
     setCurrentRect(null);
   };
 
+  // Checagem de resposta
   const checkAnswer = () => {
     if (!drawnRect) {
-      alert("Por favor, desenhe um retângulo antes de verificar!");
+      alert("Please draw a rectangle first!");
       return;
     }
-
     const correct = questions[currentStep].correctArea;
     const drawn = {
       x1: drawnRect.x,
@@ -155,23 +125,20 @@ const Practice = () => {
       y2: drawnRect.y + drawnRect.height
     };
 
-    // Calcula a sobreposição (IoU simplificado)
     const overlapX = Math.max(0, Math.min(drawn.x2, correct.x2) - Math.max(drawn.x1, correct.x1));
     const overlapY = Math.max(0, Math.min(drawn.y2, correct.y2) - Math.max(drawn.y1, correct.y1));
     const overlapArea = overlapX * overlapY;
-
     const drawnArea = drawnRect.width * drawnRect.height;
     const correctArea = (correct.x2 - correct.x1) * (correct.y2 - correct.y1);
-    const unionArea = drawnArea + correctArea - overlapArea;
+    const iou = overlapArea / (drawnArea + correctArea - overlapArea);
 
-    const iou = overlapArea / unionArea;
-    const correct_answer = iou > 0.5; // 50% de sobreposição
-
+    const correct_answer = iou > 0.5;
     setIsCorrect(correct_answer);
     setShowFeedback(true);
     setAnswers([...answers, correct_answer]);
   };
 
+  // Navegação
   const handleNext = () => {
     if (!showFeedback) {
       checkAnswer();
@@ -207,66 +174,38 @@ const Practice = () => {
   };
 
   const calculateScore = () => {
-    const correctAnswers = answers.filter(answer => answer).length;
+    const correctAnswers = answers.filter(a => a).length;
     const percentage = Math.round((correctAnswers / questions.length) * 100);
     return { correctAnswers, percentage };
   };
 
-  if (questions.length === 0) {
-    return (
-      <div className="practice-container">
-        <section className="practice-content">
-          <div className="practice-text">
-            <p className="instruction">Loading practice...</p>
-          </div>
-        </section>
-      </div>
-    );
-  }
-
+  // Render
   if (practiceFinished) {
     const { correctAnswers, percentage } = calculateScore();
     const passed = percentage >= 50;
-
     return (
       <div className="practice-container">
         <section className="practice-content">
           <div className="practice-text">
             <h1 className="result-title">
-              {passed ? (
-                <>Congrats! <span className="highlight">You Passed!</span></>
-              ) : (
-                <>Keep <span className="highlight">Practicing!</span></>
-              )}
+              {passed ? <>Congrats! <span className="highlight">You Passed!</span></> :
+                <>Keep <span className="highlight">Practicing!</span></>}
             </h1>
-            
             <div className="result-score">
               <div className="score-circle">
                 <span className="score-percentage">{percentage}%</span>
                 <span className="score-label">Score</span>
               </div>
             </div>
-
             <p className="result-details">
               You completed {correctAnswers} out of {questions.length} tasks correctly
             </p>
-
             <div className="result-message">
-              {passed ? (
-                <p>
-                  Excellent work! You've mastered the drawing practice!
-                </p>
-              ) : (
-                <p>
-                  Keep practicing to improve your accuracy. Try again!
-                </p>
-              )}
+              {passed ? <p>Excellent work! You've mastered the drawing practice!</p> :
+                <p>Keep practicing to improve your accuracy. Try again!</p>}
             </div>
-
             <div className="practice-nav">
-              <button onClick={handleRestart}>
-                Try Again
-              </button>
+              <button onClick={handleRestart}>Try Again</button>
             </div>
           </div>
         </section>
@@ -274,20 +213,17 @@ const Practice = () => {
     );
   }
 
+  // Main practice render
   return (
     <div className="practice-container">
       <section className="practice-content">
         <div className="practice-text">
-          <h1>
-            Step {currentStep + 1}: <span className="highlight">Practice</span>
-          </h1>
-          
+          <h1>Step {currentStep + 1}: <span className="highlight">Practice</span></h1>
           <p className="instruction">{questions[currentStep].instruction}</p>
-          
           <div className="canvas-wrapper">
             <img
               ref={imageRef}
-              src={`/${questions[currentStep].imagePath}`}
+              src={questions[currentStep].image}
               alt="Practice"
               className="practice-image"
               onLoad={() => {
@@ -306,23 +242,14 @@ const Practice = () => {
               onMouseLeave={handleMouseUp}
             />
           </div>
-
           {showFeedback && (
             <div className={`feedback-box ${isCorrect ? "correct" : "incorrect"}`}>
               {isCorrect ? "Correct! Well done!" : "Not quite right. The correct area is shown in green dashed line."}
             </div>
           )}
-          
           <div className="practice-nav">
-            <button 
-              onClick={handlePrev} 
-              disabled={currentStep === 0}
-            >
-              Previous
-            </button>
-            <button 
-              onClick={handleNext}
-            >
+            <button onClick={handlePrev} disabled={currentStep === 0}>Previous</button>
+            <button onClick={handleNext}>
               {showFeedback ? (currentStep === questions.length - 1 ? "Finish" : "Next") : "Check Answer"}
             </button>
           </div>
