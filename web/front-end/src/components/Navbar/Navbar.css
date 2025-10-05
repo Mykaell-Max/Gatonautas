@@ -1,18 +1,38 @@
 .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px; /* Navbar maior */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 1.5rem 2.5rem; /* mais espaçamento interno */
+  background-color: rgba(0, 0, 0, 0.4); /* transparente leve */
+  backdrop-filter: blur(10px); /* desfoque do fundo */
+  z-index: 9999;
+  font-weight: bold; /* mais grossinho */
+  font-size: 1.1rem; /* tamanho do texto maior */
 }
 
 .navbar ul {
   list-style: none;
   display: flex;
-  gap: 2rem;
+  gap: 2.5rem; /* espaço entre links maior */
+  margin: 0;
+  padding: 0;
 }
 
-.navbar a {
+.navbar a,
+.navbar button {
   color: white;
   text-decoration: none;
-  font-weight: bold;
+  font-weight: bold; /* textos mais grossos */
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.navbar a:hover,
+.navbar button:hover {
+  color: #b366ff; /* roxo claro ao passar o mouse */
 }
