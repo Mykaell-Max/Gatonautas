@@ -197,7 +197,7 @@ const Quiz = () => {
       <section className="quiz-content">
         <div className="quiz-text">
           <h1>
-            Step {currentStep + 1}: <span className="highlight">Theory</span>
+            Question {currentStep + 1} <span className="highlight"></span>
           </h1>
           
           <p className="question">{questions[currentStep].question}</p>
