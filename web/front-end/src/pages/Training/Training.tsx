@@ -1,8 +1,8 @@
 import React from 'react';
 import './Training.css';
-import Training1 from '../../../assets/Training1.svg';
-import Training2 from '../../../assets/Training2.svg';
-import Training3 from '../../../assets/Training3.svg';
+import Training1 from '../../assets/Training1.svg';
+import Training2 from '../../assets/Training2.svg';
+import Training3 from '../../assets/Training3.svg';
 
 const Training: React.FC = () => {
   return (

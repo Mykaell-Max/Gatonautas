@@ -1,7 +1,7 @@
 import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Learn from "./pages/Learn/Learn";
-import Training from "./pages/Learn/Training/Training"
+import Training from "./pages/Training/Training"
 import Explore from "./pages/Explore/Explore";
 import About from "./pages/About/About";
 import UploadData from "./pages/Explore/UploadData/UploadData";
