@@ -46,13 +46,15 @@ const handleSubmit = () => {
     <option key={model} value={model}>{model}</option>
   ))}
 </select>
+      <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+        <button
+          className="advanced-toggle"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+        >
+          {showAdvanced ? "Hide Advanced Mode" : "Advanced Mode"}
+        </button>
 
-      <button
-        className="advanced-toggle"
-        onClick={() => setShowAdvanced(!showAdvanced)}
-      >
-        {showAdvanced ? "Hide Advanced Mode" : "Advanced Mode"}
-      </button>
+      </div>
 
 {showAdvanced && selectedModel && (
   <div className="advanced-settings">
