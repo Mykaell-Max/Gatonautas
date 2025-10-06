@@ -4,11 +4,58 @@ import "./UploadData.css";
 import { useUpload } from "../../../hooks/useUpload";
 import { modelsConfig } from "../../../config/modelsConfig";
 
+const mockResult = {
+    prediction: {
+    prediction_label: "Exoplanet",
+    exoplanet_confidence: 0.95,
+    non_exoplanet_confidence: 0.05
+  },
+    features_extracted: 30,
+  features: {
+    period_days: 2.2047,
+    t0: 231.5954,
+    duration_days: 0.142,
+    duration_hours: 3.408,
+    scale_mean: -0.2586,
+    scale_std: 1.0,
+    scale_skewness: -3.4564,
+    scale_kurtosis: 10.3765,
+    scale_outlier_resistance: 0.0,
+    local_noise: 0.000164,
+    depth_stability: 0.01053,
+    acf_lag_1h: 0.7314,
+    acf_lag_3h: 0.04745,
+    acf_lag_6h: -0.06877,
+    acf_lag_12h: -0.0609,
+    acf_lag_24h: -0.06381,
+    cadence_hours: 0.01634,
+    depth_mean_per_transit: 0.007,
+    depth_std_per_transit: 0.0000787,
+    npts_transit_median: 833,
+    cdpp_3h: 511.6117,
+    cdpp_6h: 901.1231,
+    cdpp_12h: 1305.7418,
+    SES_mean: 12.401,
+    SES_std: 0.1395,
+    MES: 42.961,
+    snr_global: 12.401,
+    snr_per_transit_mean: 12.401,
+    snr_per_transit_std: 0.1395,
+    resid_rms_global: 0.00153,
+    vshape_metric: 0.9410,
+    secondary_depth: 0.000818,
+    skewness_flux: -3.4564,
+    kurtosis_flux: 10.3765,
+    outlier_resistance: 0.0,
+    planet_radius_rearth: 17.8196,
+    planet_radius_rjup: 1.6251
+  },
+};
 
 const UploadDataView: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
-
+  const [resultmock, setResult] = useState<any>(null);
   const [selectedModel, setSelectedModel] = useState<keyof typeof modelsConfig | null>(null);
   const [hyperParams, setHyperParams] = useState<any>({});
 
@@ -32,9 +79,18 @@ const UploadDataView: React.FC = () => {
 
 const handleSubmit = () => {
   if (inputMode === "csv" && file) {
-    submitUploadFile(file, selectedModel, hyperParams);
+    // Mock temporário:
+    console.log("Using mock result");
+    setResult(mockResult);
+
+    // Depois, descomente para usar a API real:
+    // submitUploadFile(file, selectedModel, hyperParams);
   } else if (inputMode === "star" && starName.trim()) {
-    submitUploadStar(starName, selectedModel, hyperParams);
+    console.log("Using mock result for star name");
+    setResult(mockResult);
+
+    // Depois, descomente para usar a API real:
+    // submitUploadStar(starName, selectedModel, hyperParams);
   }
 };
 
@@ -169,7 +225,7 @@ const handleSubmit = () => {
       </button>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {result && <pre>{JSON.stringify(result, null, 2)}</pre>}
+      {resultmock && <pre>{JSON.stringify(resultmock, null, 2)}</pre>}
     </div>
   );
 };
