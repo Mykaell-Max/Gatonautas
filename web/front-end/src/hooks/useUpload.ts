@@ -1,25 +1,48 @@
 import { useState } from "react";
-import { uploadData } from "../services/uploadService";
+import { uploadFileData, uploadStarData } from "../services/uploadService";
 
 export const useUpload = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
 
-const submitUpload = async (file: File, model: string | null, hyperParams: any) => {
-  try {
-    setLoading(true);
-    setError(null);
+  // Upload via CSV File
+  const submitUploadFile = async (
+    file: File,
+    model: string | null,
+    hyperParams: any
+  ) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    const response = await uploadData(file, model, hyperParams); // PASSANDO TUDO
-    setResult(response);
-  } catch (err: any) {
-    setError(err.message || "Upload failed");
-  } finally {
-    setLoading(false);
-  }
-};
+      const response = await uploadFileData(file, model, hyperParams);
+      setResult(response);
+    } catch (err: any) {
+      setError(err.message || "Upload failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Upload via Star Name
+  const submitUploadStar = async (
+    starName: string,
+    model: string | null,
+    hyperParams: any
+  ) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  return { submitUpload, loading, error, result };
+      const response = await uploadStarData(starName, model, hyperParams);
+      setResult(response);
+    } catch (err: any) {
+      setError(err.message || "Upload failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { submitUploadFile, submitUploadStar, loading, error, result };
 };
