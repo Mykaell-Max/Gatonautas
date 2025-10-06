@@ -1,3 +1,10 @@
+USE_TLS = False
+VERBOSE = True
+REFINE_DURATION = True
+SYSTEMATICS_CORRECTION = "off" # off, cbv, reg, both
+INCLUDE_ML_CUTOUTS = False
+ACCEPTANCE_FACTOR_FOR_SHORT_MOVES = 0.85
+
 import numpy as np
 import lightkurve as lk
 import matplotlib.pyplot as plt
