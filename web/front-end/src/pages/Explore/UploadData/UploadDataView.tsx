@@ -223,7 +223,6 @@ const handleSubmit = () => {
       <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
         {loading ? "Processing..." : "Run Prediction"}
       </button>
-
       {error && <p style={{ color: "red" }}>{error}</p>}
       {resultmock && <pre>{JSON.stringify(resultmock, null, 2)}</pre>}
     </div>
