@@ -32,9 +32,7 @@ helping you uncover potential exoplanet signals in minutes. You can also adjust 
 Explore detailed specifications of the model and performance metrics across tested datasets.
 Understand how the AI evaluates your data, and visualize results to improve your scientific insights.
             </p>
-             <div className="learn-buttons">
-            <button className="classify">View Model Metrics</button>
-          </div>
+             
         </div>
       </div>
     </div>
