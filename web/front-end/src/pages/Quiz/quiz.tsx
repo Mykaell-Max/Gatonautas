@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
-import "./Quiz.css";
+import "./quiz.css";
 
 type Option = {
   text: string;
