@@ -1,24 +1,3 @@
-# Configuration
-TARGET = "Kepler-5b"  # Change this to your target
-MISSION = "Kepler"  # or "TESS"
-SIGMA_CLIP = 5.0
-DOWNLOAD_ALL = True  # Set to True to download all available files and stitch them
-
-USE_TLS = False
-VERBOSE = True
-REFINE_DURATION = True
-SYSTEMATICS_CORRECTION = "off" # off, cbv, reg, both
-INCLUDE_ML_CUTOUTS = False
-ACCEPTANCE_FACTOR_FOR_SHORT_MOVES = 0.85
-
-# Eclipse
-MASK_ECLIPSES = False
-ECLIPSE_NSIGMA = 10.0
-ECLIPSE_MIN_DEPTH_ABS = 0.02
-ECLIPSE_MIN_GROUP = 6
-ECLIPSE_PAD_POINTS = 2
-ECLIPSE_MAX_MASK_FRACTION = 0.8
-
 import numpy as np
 import lightkurve as lk
 import matplotlib.pyplot as plt
@@ -57,10 +36,10 @@ def download_and_clean(target, mission="Kepler", sigma_clip=5.0, systematics_cor
         Whether to download all available files and stitch them
     """
     if download_all:
-        lc = lk.search_lightcurve(target, mission=mission).download()
-    else:
         lc = lk.search_lightcurve(target, mission=mission).download_all()
         lc = lc.stitch()
+    else:
+        lc = lk.search_lightcurve(target, mission=mission).download()
     lc = lc.remove_nans()
     lc = lc.normalize()
     
@@ -133,21 +112,13 @@ def detrend_with_bls_mask(tTime, flux,
                           bin_width=0.5, spline_s=0.001,
                           max_iter=4, sigma=3.0,
                           refine_duration=True,
-                          use_tls=True,
-                          mask_eclipses=True,
-                          eclipse_nsigma=ECLIPSE_NSIGMA,
-                          eclipse_min_depth_abs=ECLIPSE_MIN_DEPTH_ABS,
-                          eclipse_min_group=ECLIPSE_MIN_GROUP,
-                          eclipse_pad_points=ECLIPSE_PAD_POINTS,
-                          eclipse_max_mask_fraction=ECLIPSE_MAX_MASK_FRACTION):
+                          use_tls=True):
     bls_start = time.time()
     print("Starting BLS detrending and period search...")
     
     mask_valid = np.isfinite(tTime) & np.isfinite(flux)
     tTime = np.asarray(tTime)[mask_valid]
     flux = np.asarray(flux)[mask_valid]
-    # Keep a copy of raw (pre-stitch) flux for eclipse detection
-    _flux_raw_for_eclipse = np.asarray(flux).copy()
 
     # Pre-BLS stitching: per-segment robust normalization and tail winsorization
     try:
@@ -192,70 +163,6 @@ def detrend_with_bls_mask(tTime, flux,
     
     print(f"BLS input: {len(tTime):,} valid points")
 
-    # Eclipse masking before BLS
-    def _mask_deep_eclipses(time, flux,
-                            nsigma=8.0,
-                            min_depth_abs=0.02,
-                            min_group=3,
-                            pad_points=1,
-                            max_mask_fraction=0.2):
-        time = np.asarray(time)
-        flux = np.asarray(flux)
-        if time.size < 5:
-            return np.zeros_like(time, dtype=bool)
-        med = np.nanmedian(flux)
-        mad = np.nanmedian(np.abs(flux - med))
-        sigma_loc = 1.4826 * mad if (mad > 0 and np.isfinite(mad)) else np.nanstd(flux)
-        if not np.isfinite(sigma_loc) or sigma_loc <= 0:
-            sigma_loc = 1e-6
-        thr_sigma = med - nsigma * sigma_loc
-        thr_abs = med * (1.0 - float(min_depth_abs))
-        # Flag as eclipse if either condition is met (OR), not AND
-        dips = np.isfinite(flux) & ((flux < thr_sigma) | (flux < thr_abs))
-        if not np.any(dips):
-            return np.zeros_like(time, dtype=bool)
-        idx = np.flatnonzero(dips)
-        splits = np.where(np.diff(idx) > 1)[0]
-        starts = np.r_[0, splits + 1]
-        ends = np.r_[splits + 1, idx.size]
-        mask = np.zeros_like(time, dtype=bool)
-        for s, e in zip(starts, ends):
-            i0 = int(idx[s]); i1 = int(idx[e - 1])
-            if (i1 - i0 + 1) >= int(min_group):
-                j0 = max(0, i0 - int(pad_points))
-                j1 = min(time.size, i1 + int(pad_points) + 1)
-                mask[j0:j1] = True
-        frac = float(np.sum(mask)) / float(time.size)
-        if frac > float(max_mask_fraction):
-            return np.zeros_like(time, dtype=bool)
-        return mask
-
-    if mask_eclipses:
-        eclipse_mask = _mask_deep_eclipses(
-            tTime, _flux_raw_for_eclipse,
-            nsigma=eclipse_nsigma,
-            min_depth_abs=eclipse_min_depth_abs,
-            min_group=eclipse_min_group,
-            pad_points=eclipse_pad_points,
-            max_mask_fraction=eclipse_max_mask_fraction,
-        )
-    else:
-        eclipse_mask = np.zeros_like(tTime, dtype=bool)
-
-    time_bls = tTime[~eclipse_mask]
-    flux_bls = flux[~eclipse_mask]
-    if time_bls.size < 10:
-        time_bls = tTime; flux_bls = flux
-        eclipse_mask[:] = False
-    # Log masking statistics, including min/median/max of masked depths
-    if np.any(eclipse_mask):
-        masked_vals = _flux_raw_for_eclipse[eclipse_mask]
-        print(
-            f"Masked eclipses: {np.sum(eclipse_mask):,} points | depth med={float(np.nanmedian(1-masked_vals)):.5f}"
-        )
-    else:
-        print("Masked eclipses: 0 points")
-
     if max_period is None:
         span_days = float(tTime.max() - tTime.min())
         # Relaxed heuristic: allow up to 80% of span, capped at 200 days
@@ -263,15 +170,15 @@ def detrend_with_bls_mask(tTime, flux,
 
     print(f"Period search range: {min_period:.3f} to {max_period:.3f} days")
 
-    # Build a cadence-aware duration grid. Floor the minimum duration to ~2 samples to accommodate LC data
-    diffs = np.diff(time_bls)
+    # Build a cadence-aware duration grid. Floor the minimum duration to ~3 samples.
+    diffs = np.diff(tTime)
     diffs = diffs[np.isfinite(diffs)]
     if diffs.size:
         dt_days = np.median(diffs)
-        min_dur_floor = max(0.01, 2.0 * dt_days)
+        min_dur_floor = max(0.01, 3.0 * dt_days)
     else:
         dt_days = 0.02 
-        min_dur_floor = 0.04
+        min_dur_floor = 0.06
     # Cap durations to a fraction of the minimum period so BLS constraints are satisfied
     max_dur_cap = 0.2 * min_period 
     if not np.isfinite(max_dur_cap) or max_dur_cap <= 0:
@@ -285,7 +192,7 @@ def detrend_with_bls_mask(tTime, flux,
     print(f"Search grid: {n_periods} periods × {n_durations} durations = {n_periods * n_durations:,} combinations")
 
     print("Computing BLS periodogram...")
-    bls = BoxLeastSquares(time_bls, flux_bls)
+    bls = BoxLeastSquares(tTime, flux)
     periodogram = bls.power(period_grid, durations, oversample=oversample)
     print("BLS periodogram computed successfully")
 
@@ -427,13 +334,13 @@ def detrend_with_bls_mask(tTime, flux,
                         if np.isfinite(duty_best) and duty_best >= 0.001 and duty_best <= 0.2:
                             cand_results.append({"P": float(best_period), "D": float(best_duration), "t0": float(t0),
                                              "power": base_power, "epochs": n_epochs_best})
-                        # Sort by power, then prefer fewer epochs (longer periods) to avoid short aliases
-                        cand_results.sort(key=lambda r: (r["power"], -r["epochs"]), reverse=True)
+                        # Sort by power, then prefer more epochs (more repeated events) to avoid spurious long aliases
+                        cand_results.sort(key=lambda r: (r["power"], r["epochs"]), reverse=True)
                         top = cand_results[0]
                         accept = False
                         if top["P"] > float(best_period):
-                            # Accept longer period if power nearly as good
-                            accept = (top["power"] >= 0.98 * base_power)
+                            # Accept longer period only if significantly better and with enough observed epochs
+                            accept = (top["power"] >= 1.05 * base_power and top["epochs"] >= 3)
                         elif top["P"] < float(best_period):
                             # Accept shorter only with strong power gain
                             accept = (top["power"] >= 1.25 * base_power)
