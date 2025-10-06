@@ -6,7 +6,7 @@ import { modelsConfig } from "../../../config/modelsConfig";
 
 const mockResult = {
     prediction: {
-    prediction_label: "Exoplanet",
+    prediction_label: "CONFIRMED",
     exoplanet_confidence: 0.95,
     non_exoplanet_confidence: 0.05
   },
@@ -59,16 +59,12 @@ const UploadDataView: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<keyof typeof modelsConfig | null>(null);
   const [hyperParams, setHyperParams] = useState<any>({});
 
-  // novo estado para toggle
-  const [inputMode, setInputMode] = useState<"csv" | "star">("csv");
-  const [starName, setStarName] = useState<string>("");
-
   const handleModelChange = (model: keyof typeof modelsConfig) => {
     setSelectedModel(model);
     setHyperParams(modelsConfig[model]); // carrega defaults do modelo
   };
 
-  const { submitUploadFile, submitUploadStar, loading, error, result } = useUpload();
+  const { loading, error } = useUpload();
 
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -78,20 +74,13 @@ const UploadDataView: React.FC = () => {
   };
 
 const handleSubmit = () => {
-  if (inputMode === "csv" && file) {
-    // Mock temporário:
-    console.log("Using mock result");
-    setResult(mockResult);
+  if (!file) return;
+  // Mock temporário:
+  console.log("Using mock result");
+  setResult(mockResult);
 
-    // Depois, descomente para usar a API real:
-    // submitUploadFile(file, selectedModel, hyperParams);
-  } else if (inputMode === "star" && starName.trim()) {
-    console.log("Using mock result for star name");
-    setResult(mockResult);
-
-    // Depois, descomente para usar a API real:
-    // submitUploadStar(starName, selectedModel, hyperParams);
-  }
+  // Depois, descomente para usar a API real:
+  // submitUploadFile(file, selectedModel, hyperParams);
 };
 
 
@@ -99,9 +88,9 @@ const handleSubmit = () => {
     <div className="upload-container">
       <h1>Discover Exoplanets with Your Light Curves Data</h1>
       <p>
-        Upload your CSV files or enter a star name. Our ML model will analyze them.
-        You can either stick with the default hyperparameters, carefully optimized
-        by our developers, or adjust them yourself in Advanced Mode.
+        Upload your CSV file and let our ML model analyze it. You can
+        either stick with the default hyperparameters, carefully optimized by our
+        developers, or adjust them yourself in Advanced Mode.
       </p>
 
       <select onChange={(e) => handleModelChange(e.target.value as keyof typeof modelsConfig)}>
@@ -170,55 +159,23 @@ const handleSubmit = () => {
         </div>
       )}
           {/* Toggle entre CSV e Star Name */}
-      <div className="input-mode-toggle">
-        <button
-          className={inputMode === "csv" ? "active" : ""}
-          onClick={() => setInputMode("csv")}
-        >
-          Upload CSV
-        </button>
-        <button
-          className={inputMode === "star" ? "active" : ""}
-          onClick={() => setInputMode("star")}
-        >
-          Enter Star Name
-        </button>
+      <div
+        className="upload-dropzone"
+        onClick={() => document.getElementById("fileInput")?.click()}
+      >
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleFileChange}
+          id="fileInput"
+          style={{ display: "none" }}
+        />
+        {file ? (
+          <p className="file-name">{file.name}</p>
+        ) : (
+          <p>Click to select your CSV here</p>
+        )}
       </div>
-      {/* Se inputMode = csv, mostra upload */}
-      {inputMode === "csv" && (
-        <div
-          className="upload-dropzone"
-          onClick={() => document.getElementById("fileInput")?.click()}
-        >
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleFileChange}
-            id="fileInput"
-            style={{ display: "none" }}
-          />
-          {file ? (
-            <p className="file-name">{file.name}</p>
-          ) : (
-            <p>Click to select your CSV here</p>
-          )}
-        </div>
-      )}
-
-      {/* Se inputMode = star, mostra input texto */}
-      {inputMode === "star" && (
-        <div className="star-input">
-          <label>
-            Star Name:
-            <input
-              type="text"
-              value={starName}
-              onChange={(e) => setStarName(e.target.value)}
-              placeholder="Enter star name..."
-            />
-          </label>
-        </div>
-      )}
 
       <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
         {loading ? "Processing..." : "Run Prediction"}
