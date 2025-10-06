@@ -1,0 +1,191 @@
+.metrics-page {
+	min-height: 100vh;
+	width: 100%;
+	background: radial-gradient(circle at top left, rgba(255, 179, 0, 0.1), transparent 60%),
+							radial-gradient(circle at bottom right, rgba(95, 217, 255, 0.1), transparent 55%),
+							#020203;
+	color: #f5f5f5;
+	font-family: "Inter", "Segoe UI", sans-serif;
+	padding: 64px 32px 96px;
+	box-sizing: border-box;
+}
+
+.metrics-container {
+	max-width: 1100px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 32px;
+}
+
+.metrics-header {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.metrics-header h1 {
+	font-size: 2.75rem;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+}
+
+.metrics-header p {
+	max-width: 760px;
+	color: rgba(245, 245, 245, 0.75);
+	line-height: 1.6;
+}
+
+.metrics-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 24px;
+}
+
+.metric-card {
+	background: linear-gradient(155deg, rgba(255, 255, 255, 0.08), rgba(8, 8, 8, 0.7));
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 16px;
+	padding: 24px;
+	box-shadow: 0 26px 56px -40px rgba(0, 0, 0, 0.6);
+	backdrop-filter: blur(12px);
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.metric-card h2 {
+	font-size: 1.2rem;
+	font-weight: 600;
+	color: #ffcc66;
+	margin: 0;
+}
+
+.metric-card p {
+	margin: 0;
+	color: rgba(245, 245, 245, 0.8);
+}
+
+.metric-value {
+	font-size: 2.5rem;
+	font-weight: 700;
+	color: #ffffff;
+}
+
+.metrics-table-wrapper {
+	background: rgba(10, 10, 10, 0.65);
+	border-radius: 18px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	overflow: hidden;
+	box-shadow: 0 26px 56px -40px rgba(0, 0, 0, 0.7);
+}
+
+.metrics-table-title {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 24px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.metrics-table-title h2 {
+	margin: 0;
+	font-size: 1.35rem;
+}
+
+.metrics-table-title span {
+	font-size: 0.95rem;
+	color: rgba(245, 245, 245, 0.65);
+}
+
+.classification-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.classification-table thead {
+	background: rgba(255, 204, 102, 0.08);
+}
+
+.classification-table th,
+.classification-table td {
+	text-align: right;
+	padding: 16px 20px;
+	font-size: 0.95rem;
+}
+
+.classification-table th:first-child,
+.classification-table td:first-child {
+	text-align: left;
+}
+
+.classification-table tbody tr:nth-child(even) {
+	background: rgba(255, 255, 255, 0.02);
+}
+
+.classification-table tbody tr.highlight {
+	background: rgba(79, 217, 255, 0.08);
+}
+
+.badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 999px;
+	background: rgba(79, 217, 255, 0.12);
+	color: #4fd9ff;
+	font-size: 0.85rem;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.hyperparameters-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 12px 18px;
+	padding-top: 8px;
+}
+
+.hyperparameters-list dt {
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	color: rgba(245, 245, 245, 0.65);
+}
+
+.hyperparameters-list dd {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 500;
+	color: #ffffff;
+}
+
+.metrics-footnote {
+	font-size: 0.85rem;
+	color: rgba(245, 245, 245, 0.55);
+	line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+	.metrics-page {
+		padding: 48px 18px 72px;
+	}
+
+	.metrics-header h1 {
+		font-size: 2.1rem;
+	}
+
+	.metrics-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.metric-card {
+		padding: 20px;
+	}
+
+	.classification-table th,
+	.classification-table td {
+		padding: 12px 14px;
+	}
+}

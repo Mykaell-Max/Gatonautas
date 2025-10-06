@@ -33,7 +33,9 @@ Explore detailed specifications of the model and performance metrics across test
 Understand how the AI evaluates your data, and visualize results to improve your scientific insights.
             </p>
              <div className="learn-buttons">
-            <button className="classify">View Model Metrics</button>
+            <Link to="/ModelMetrics">
+              <button className="classify">View Model Metrics</button>
+            </Link>
           </div>
         </div>
       </div>
